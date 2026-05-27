@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply bg-bg text-fg;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Evitar zoom en inputs en iOS */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Inputs grandes para mobile */
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* evita zoom en iOS */
+  }
+}
