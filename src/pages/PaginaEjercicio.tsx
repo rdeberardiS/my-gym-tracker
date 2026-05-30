@@ -17,7 +17,7 @@
  * Una serie registrada guarda su peso (el de arriba) y las reps prescriptas.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Pantalla } from '@/components/Pantalla';
 import { Header } from '@/components/Header';
@@ -34,6 +34,10 @@ import {
   actualizarVideoEjercicio,
   obtenerEjercicio,
 } from '@/db/repositorios/ejercicioRepo';
+import {
+  obtenerComentario,
+  guardarComentario,
+} from '@/db/repositorios/comentarioRepo';
 import { RUTAS } from '@/rutas';
 import type {
   Ejercicio,
@@ -91,9 +95,12 @@ export function PaginaEjercicio() {
   const [ultimaVez, setUltimaVez] = useState<ResumenUltimaVez | null>(null);
   const [seriesEnPantalla, setSeriesEnPantalla] = useState<SerieEnPantalla[]>([]);
   const [pesoGlobal, setPesoGlobal] = useState<number>(0);
+  const [pesoTexto, setPesoTexto] = useState<string>('0');
   const [mostrarVideo, setMostrarVideo] = useState(false);
   const [modalVideoAbierto, setModalVideoAbierto] = useState(false);
   const [guardandoTodas, setGuardandoTodas] = useState(false);
+  const [comentario, setComentario] = useState('');
+  const timerComentario = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     cargar();
@@ -138,6 +145,7 @@ export function PaginaEjercicio() {
       // Si no, usar el de la última vez. Si nunca entrenó, default 10.
       const pesoInicial = seriesEsteEjercicio[0]?.peso ?? ultima.pesoPreRellenado ?? 10;
       setPesoGlobal(pesoInicial);
+      setPesoTexto(fmtPeso(pesoInicial));
 
       const repsObjetivo = parsearRepsObjetivo(presc.repsPrescriptas);
 
@@ -163,19 +171,53 @@ export function PaginaEjercicio() {
         }
       }
       setSeriesEnPantalla(en);
+
+      // Cargar la nota de este ejercicio en esta sesión (si existe)
+      const notaExistente = await obtenerComentario(sesionId, ej.id);
+      setComentario(notaExistente);
     } finally {
       setCargando(false);
     }
   };
 
-  // Cuando cambia el peso global, lo propagamos a todas las series NO marcadas.
-  // Las marcadas conservan el peso con el que se registraron.
-  const ajustarPesoGlobal = (delta: number) => {
-    const nuevo = Math.max(0, +(pesoGlobal + delta).toFixed(2));
-    setPesoGlobal(nuevo);
+  // Aplica un peso nuevo: actualiza el número, el texto del input, y lo
+  // propaga a todas las series NO marcadas (las marcadas conservan el suyo).
+  const aplicarPeso = (nuevo: number) => {
+    const limpio = Math.max(0, +nuevo.toFixed(2));
+    setPesoGlobal(limpio);
+    setPesoTexto(fmtPeso(limpio));
     setSeriesEnPantalla((prev) =>
-      prev.map((s) => (s.marcada ? s : { ...s, peso: nuevo }))
+      prev.map((s) => (s.marcada ? s : { ...s, peso: limpio }))
     );
+  };
+
+  // Botones −2.5 / +2.5
+  const ajustarPesoGlobal = (delta: number) => {
+    aplicarPeso(pesoGlobal + delta);
+  };
+
+  // Tipeo directo en el número (ej: escribir 40 de una)
+  const onCambiarTextoPeso = (texto: string) => {
+    // Permitimos coma o punto como decimal y dejamos el campo libre mientras tipea
+    setPesoTexto(texto);
+    const n = parseFloat(texto.replace(',', '.'));
+    if (!isNaN(n) && n >= 0) {
+      const limpio = +n.toFixed(2);
+      setPesoGlobal(limpio);
+      setSeriesEnPantalla((prev) =>
+        prev.map((s) => (s.marcada ? s : { ...s, peso: limpio }))
+      );
+    }
+  };
+
+  // Al salir del campo, si quedó vacío o inválido, lo devolvemos al valor actual
+  const onTerminarEdicionPeso = () => {
+    const n = parseFloat(pesoTexto.replace(',', '.'));
+    if (isNaN(n) || n < 0) {
+      setPesoTexto(fmtPeso(pesoGlobal));
+    } else {
+      setPesoTexto(fmtPeso(+n.toFixed(2)));
+    }
   };
 
   // Registra una serie con el peso actual (el de arriba).
@@ -279,6 +321,32 @@ export function PaginaEjercicio() {
     setEjercicio({ ...ejercicio, videoUrl: nuevoUrl ?? undefined });
   };
 
+  // Guarda la nota. Mientras escribe, lo hacemos con un pequeño retraso
+  // (debounce) para no escribir en cada tecla. También guardamos al salir.
+  const onCambiarComentario = (texto: string) => {
+    setComentario(texto);
+    if (!ejercicio || !sesionId) return;
+    if (timerComentario.current) clearTimeout(timerComentario.current);
+    const ejId = ejercicio.id;
+    const sId = sesionId;
+    timerComentario.current = setTimeout(() => {
+      guardarComentario(sId, ejId, texto);
+    }, 500);
+  };
+
+  const guardarComentarioYa = () => {
+    if (!ejercicio || !sesionId) return;
+    if (timerComentario.current) clearTimeout(timerComentario.current);
+    guardarComentario(sesionId, ejercicio.id, comentario);
+  };
+
+  // Al desmontar la pantalla, nos aseguramos de dejar la nota guardada.
+  useEffect(() => {
+    return () => {
+      if (timerComentario.current) clearTimeout(timerComentario.current);
+    };
+  }, []);
+
   const todasMarcadas = useMemo(
     () => seriesEnPantalla.length > 0 && seriesEnPantalla.every((s) => s.marcada),
     [seriesEnPantalla]
@@ -324,12 +392,12 @@ export function PaginaEjercicio() {
           <>
             <button
               onClick={() => setMostrarVideo((v) => !v)}
-              className="w-full mb-3 px-4 py-3 bg-red-950/30 border border-red-700/50 rounded-lg flex items-center justify-center gap-2"
+              className="w-full mb-3 px-4 py-3 bg-accent-muted border border-accent/40 rounded-lg flex items-center justify-center gap-2"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="#ef4444">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#c97b84">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
-              <span className="text-fg text-sm font-medium">
+              <span className="text-accent text-sm font-medium">
                 {mostrarVideo ? 'Ocultar video' : 'Ver técnica'}
               </span>
             </button>
@@ -361,7 +429,7 @@ export function PaginaEjercicio() {
             {prescripcion.seriesPrescriptas} × {prescripcion.repsPrescriptas}
           </p>
           {prescripcion.intensidad && (
-            <Intensidad valor={prescripcion.intensidad} tamano="sm" conEtiqueta />
+            <Intensidad valor={prescripcion.intensidad} tamano="md" conEtiqueta />
           )}
         </div>
         {ultimaVez && ultimaVez.fechaUltimaVez && (
@@ -376,31 +444,42 @@ export function PaginaEjercicio() {
         )}
 
         {porLado && (
-          <div className="mb-4 px-3 py-2 bg-amber-950/30 border border-amber-700/50 rounded-lg">
-            <p className="text-amber-200 text-xs leading-relaxed">
+          <div className="mb-4 px-3 py-2 bg-warn-muted border border-warn/50 rounded-lg">
+            <p className="text-warn-ink text-xs leading-relaxed">
               ℹ️ Este ejercicio es <strong>por lado</strong>. Cargá el peso y reps de
               un solo lado (la app guarda un único valor).
             </p>
           </div>
         )}
 
-        {/* Stepper de peso global */}
+        {/* Peso global: editable directo + botones de ajuste fino */}
         <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-4 mb-4">
-          <p className="text-fg-muted text-xs mb-2">Peso para todas las series</p>
+          <p className="text-fg-muted text-xs mb-2">
+            Peso para todas las series · tocá el número para escribirlo
+          </p>
           <div className="flex items-center justify-between gap-3">
             <button
               onClick={() => ajustarPesoGlobal(-2.5)}
-              className="bg-bg border border-bg-subtle text-fg w-16 h-14 rounded-lg text-lg font-medium active:bg-bg-subtle"
+              className="bg-bg border border-bg-subtle text-fg w-16 h-14 rounded-lg text-lg font-medium active:bg-bg-subtle shrink-0"
             >
               −2.5
             </button>
-            <div className="flex-1 text-center">
-              <span className="text-4xl font-medium text-fg">{fmtPeso(pesoGlobal)}</span>
-              <span className="text-fg-muted text-sm ml-1">kg</span>
+            <div className="flex-1 flex items-baseline justify-center gap-1 min-w-0">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={pesoTexto}
+                onChange={(e) => onCambiarTextoPeso(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                onBlur={onTerminarEdicionPeso}
+                aria-label="Peso en kilos"
+                className="bg-transparent text-center text-4xl font-medium text-fg w-24 focus:outline-none focus:text-accent border-b border-transparent focus:border-accent"
+              />
+              <span className="text-fg-muted text-sm">kg</span>
             </div>
             <button
               onClick={() => ajustarPesoGlobal(2.5)}
-              className="bg-bg border border-bg-subtle text-fg w-16 h-14 rounded-lg text-lg font-medium active:bg-bg-subtle"
+              className="bg-bg border border-bg-subtle text-fg w-16 h-14 rounded-lg text-lg font-medium active:bg-bg-subtle shrink-0"
             >
               +2.5
             </button>
@@ -412,7 +491,7 @@ export function PaginaEjercicio() {
           <button
             onClick={registrarTodas}
             disabled={guardandoTodas}
-            className="w-full mb-4 py-4 rounded-xl text-base font-semibold bg-accent text-emerald-950 active:opacity-80 disabled:opacity-50"
+            className="w-full mb-4 py-4 rounded-xl text-base font-semibold bg-accent text-accent-ink active:opacity-80 disabled:opacity-50"
           >
             {guardandoTodas
               ? 'Registrando...'
@@ -432,6 +511,24 @@ export function PaginaEjercicio() {
             <BotonSerie key={idx} serie={s} onTocar={() => alternarSerie(idx)} />
           ))}
         </div>
+
+        {/* Nota del ejercicio (para vos / tu PT) */}
+        <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-4">
+          <label className="block text-fg-muted text-xs mb-2">
+            📝 Nota de hoy <span className="text-fg-subtle">· para vos o tu PT</span>
+          </label>
+          <textarea
+            value={comentario}
+            onChange={(e) => onCambiarComentario(e.target.value)}
+            onBlur={guardarComentarioYa}
+            rows={3}
+            placeholder="Ej: me costó la última serie, ¿subo el peso? / la rodilla me molestó un poco"
+            className="w-full bg-bg border border-bg-subtle text-fg px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-fg-muted resize-none placeholder:text-fg-subtle"
+          />
+          <p className="text-fg-subtle text-[11px] mt-1.5">
+            Se guarda sola. La vas a poder leer en Progreso, tocando el día.
+          </p>
+        </div>
       </div>
 
       <div
@@ -439,10 +536,13 @@ export function PaginaEjercicio() {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0) + 12px)' }}
       >
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            guardarComentarioYa();
+            navigate(-1);
+          }}
           className={`w-full py-4 rounded-xl text-base font-medium ${
             todasMarcadas
-              ? 'bg-accent text-emerald-950'
+              ? 'bg-accent text-accent-ink'
               : 'bg-bg-elevated text-fg border border-bg-subtle'
           }`}
         >

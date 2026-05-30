@@ -14,6 +14,7 @@ import { Pantalla } from '@/components/Pantalla';
 import { BottomBar } from '@/components/BottomBar';
 import { db } from '@/db/schema';
 import { obtenerConfiguracion } from '@/db/repositorios/configuracionRepo';
+import { obtenerComentariosDeSesion } from '@/db/repositorios/comentarioRepo';
 import type { Sesion, Serie, Ejercicio, DiaRutina } from '@/types/dominio';
 
 interface ResumenDia {
@@ -23,6 +24,7 @@ interface ResumenDia {
     nombre: string;
     peso: number;
     series: number;
+    comentario?: string;
   }>;
 }
 
@@ -113,6 +115,8 @@ export function PaginaProgreso() {
       porEjercicio.set(s.ejercicioId, list);
     }
 
+    const comentarios = await obtenerComentariosDeSesion(sesion.id);
+
     const ejerciciosResumen: ResumenDia['ejercicios'] = [];
     for (const [ejId, ss] of porEjercicio.entries()) {
       const ej: Ejercicio | undefined = await db.ejercicios.get(ejId);
@@ -135,6 +139,7 @@ export function PaginaProgreso() {
         nombre: ej.nombre,
         peso: pesoMax,
         series: ss.length,
+        comentario: comentarios.get(ejId),
       });
     }
 
@@ -262,8 +267,8 @@ export function PaginaProgreso() {
 
               if (c.entrenado) {
                 const bg = c.semanaCumplida
-                  ? 'bg-emerald-950 text-emerald-200'
-                  : 'bg-amber-950/60 text-amber-200';
+                  ? 'bg-sage text-sage-ink'
+                  : 'bg-caramel text-caramel-ink';
 
                 return (
                   <button
@@ -294,11 +299,11 @@ export function PaginaProgreso() {
 
           <div className="flex gap-3 mt-3 pt-3 border-t border-bg-subtle flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 bg-emerald-950 rounded inline-block" />
+              <span className="w-3 h-3 bg-sage rounded inline-block" />
               <span className="text-[11px] text-fg-muted">Cumplí la semana</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 bg-amber-950/60 rounded inline-block" />
+              <span className="w-3 h-3 bg-caramel rounded inline-block" />
               <span className="text-[11px] text-fg-muted">No llegué</span>
             </div>
           </div>
@@ -323,7 +328,7 @@ export function PaginaProgreso() {
                   Día {resumen.diaRutinaOrden} · {resumen.diaRutinaNombre}
                 </p>
               </div>
-              <span className="bg-emerald-950 text-emerald-200 text-[11px] px-2 py-1 rounded">
+              <span className="bg-accent-muted text-accent text-[11px] px-2 py-1 rounded">
                 Completado
               </span>
             </div>
@@ -331,13 +336,20 @@ export function PaginaProgreso() {
             {resumen.ejercicios.map((e, i) => (
               <div
                 key={i}
-                className="py-2.5 flex justify-between items-center border-t border-bg-subtle"
+                className="py-2.5 border-t border-bg-subtle"
               >
-                <span className="text-sm text-fg">{e.nombre}</span>
-                <span className="text-xs text-fg-muted">
-                  {e.peso > 0 ? `${e.peso} kg · ` : ''}
-                  {e.series} {e.series === 1 ? 'serie' : 'series'}
-                </span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-fg">{e.nombre}</span>
+                  <span className="text-xs text-fg-muted">
+                    {e.peso > 0 ? `${e.peso} kg · ` : ''}
+                    {e.series} {e.series === 1 ? 'serie' : 'series'}
+                  </span>
+                </div>
+                {e.comentario && (
+                  <p className="mt-1.5 text-xs text-fg-muted bg-bg rounded-lg px-3 py-2 border border-bg-subtle">
+                    📝 {e.comentario}
+                  </p>
+                )}
               </div>
             ))}
           </div>

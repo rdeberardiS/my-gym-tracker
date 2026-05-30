@@ -99,7 +99,7 @@ export function ModalCambiarVideo({
 
         <button
           onClick={guardar}
-          className="w-full bg-accent text-emerald-950 py-3 rounded-lg text-sm font-medium mb-2"
+          className="w-full bg-accent text-accent-ink py-3 rounded-lg text-sm font-medium mb-2"
         >
           Guardar video
         </button>

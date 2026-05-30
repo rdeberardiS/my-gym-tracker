@@ -23,6 +23,7 @@ import type {
   EjercicioEnDiaRutina,
   Sesion,
   Serie,
+  ComentarioEjercicio,
 } from '@/types/dominio';
 
 export class GymDB extends Dexie {
@@ -33,6 +34,7 @@ export class GymDB extends Dexie {
   ejerciciosEnDiaRutina!: Table<EjercicioEnDiaRutina, string>;
   sesiones!: Table<Sesion, string>;
   series!: Table<Serie, string>;
+  comentarios!: Table<ComentarioEjercicio, string>;
 
   constructor() {
     super('gym-tracker-db');
@@ -61,6 +63,12 @@ export class GymDB extends Dexie {
       // Indice compuesto [ejercicioId+fechaRegistro] para que el ORDER BY
       // sea instantáneo.
       series: 'id, sesionId, ejercicioId, [ejercicioId+fechaRegistro]',
+    });
+
+    // Versión 2: agrega comentarios por ejercicio dentro de una sesión.
+    // Las tablas de la v1 se mantienen intactas; solo se suma 'comentarios'.
+    this.version(2).stores({
+      comentarios: 'id, sesionId',
     });
   }
 }

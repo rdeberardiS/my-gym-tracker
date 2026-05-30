@@ -240,7 +240,7 @@ export function PaginaEntrenamiento() {
           disabled={!algunoCompletado || terminando}
           className={`w-full py-4 rounded-xl text-base font-medium ${
             algunoCompletado
-              ? 'bg-accent text-emerald-950'
+              ? 'bg-accent text-accent-ink'
               : 'bg-bg-elevated text-fg-subtle border border-bg-subtle cursor-not-allowed'
           }`}
         >

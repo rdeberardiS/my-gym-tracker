@@ -167,7 +167,7 @@ export function PaginaPreviewRutina() {
           </p>
           <button
             onClick={() => navigate(RUTAS.importar)}
-            className="bg-accent text-emerald-950 py-3 px-6 rounded-xl text-sm font-medium"
+            className="bg-accent text-accent-ink py-3 px-6 rounded-xl text-sm font-medium"
           >
             Volver a pegar
           </button>
@@ -291,7 +291,7 @@ export function PaginaPreviewRutina() {
         <button
           onClick={confirmar}
           disabled={guardando || totalEjercicios === 0}
-          className="w-full mt-6 bg-accent text-emerald-950 py-4 rounded-xl text-sm font-medium disabled:opacity-50"
+          className="w-full mt-6 bg-accent text-accent-ink py-4 rounded-xl text-sm font-medium disabled:opacity-50"
         >
           {guardando ? 'Guardando...' : 'Confirmar y empezar →'}
         </button>

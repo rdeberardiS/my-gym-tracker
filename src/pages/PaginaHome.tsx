@@ -121,7 +121,7 @@ export function PaginaHome() {
           </p>
           <button
             onClick={() => navigate(RUTAS.importar)}
-            className="w-full max-w-sm bg-accent text-emerald-950 py-4 rounded-xl text-base font-medium"
+            className="w-full max-w-sm bg-accent text-accent-ink py-4 rounded-xl text-base font-medium"
           >
             Pegar mi rutina
           </button>
@@ -166,13 +166,13 @@ export function PaginaHome() {
       <div className="px-5 pb-6 flex-1 overflow-y-auto">
         {/* Alerta roja */}
         {alertaRoja && (
-          <div className="bg-red-950/40 border border-red-800 rounded-xl p-3.5 mb-4 flex gap-3 items-start">
+          <div className="bg-danger-muted border border-danger/40 rounded-xl p-3.5 mb-4 flex gap-3 items-start">
             <svg
               width="22"
               height="22"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#ef4444"
+              stroke="#cf6b63"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -183,10 +183,10 @@ export function PaginaHome() {
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <div>
-              <p className="text-red-300 text-sm font-medium mb-0.5">
+              <p className="text-danger-ink text-sm font-medium mb-0.5">
                 No vas a llegar esta semana
               </p>
-              <p className="text-red-300/80 text-xs leading-relaxed">
+              <p className="text-danger-ink/80 text-xs leading-relaxed">
                 Te faltan {estadoSemanal!.objetivo - estadoSemanal!.entrenosCompletados}{' '}
                 entrenos. Cerrá la semana con lo que puedas, el lunes empezás de nuevo.
               </p>
@@ -196,13 +196,13 @@ export function PaginaHome() {
 
         {/* Alerta amarilla */}
         {alertaAmarilla && (
-          <div className="bg-amber-950/30 border border-amber-700/50 rounded-xl p-3.5 mb-4 flex gap-3 items-start">
+          <div className="bg-warn-muted border border-warn/50 rounded-xl p-3.5 mb-4 flex gap-3 items-start">
             <svg
               width="22"
               height="22"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#f59e0b"
+              stroke="#d8a24a"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -212,10 +212,10 @@ export function PaginaHome() {
               <polyline points="12 6 12 12 16 14" />
             </svg>
             <div>
-              <p className="text-amber-200 text-sm font-medium mb-0.5">
+              <p className="text-warn-ink text-sm font-medium mb-0.5">
                 Apretá el paso
               </p>
-              <p className="text-amber-200/80 text-xs leading-relaxed">
+              <p className="text-warn-ink/80 text-xs leading-relaxed">
                 Vas {estadoSemanal!.entrenosCompletados} de {estadoSemanal!.objetivo}.
                 Si entrenás{' '}
                 {estadoSemanal!.objetivo - estadoSemanal!.entrenosCompletados === 1
@@ -271,7 +271,7 @@ export function PaginaHome() {
 
         <button
           onClick={() => empezarEntrenamiento()}
-          className="w-full bg-accent text-emerald-950 py-4 rounded-xl text-base font-medium mt-5 mb-2"
+          className="w-full bg-accent text-accent-ink py-4 rounded-xl text-base font-medium mt-5 mb-2"
         >
           Empezar entrenamiento →
         </button>

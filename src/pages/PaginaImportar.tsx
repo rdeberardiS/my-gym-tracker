@@ -85,7 +85,7 @@ export function PaginaImportar() {
           disabled={!puedeInterpretar}
           className={`w-full mt-6 py-4 rounded-xl text-base font-medium transition-colors ${
             puedeInterpretar
-              ? 'bg-accent text-emerald-950'
+              ? 'bg-accent text-accent-ink'
               : 'bg-bg-subtle text-fg-subtle border border-bg-subtle cursor-not-allowed'
           }`}
         >

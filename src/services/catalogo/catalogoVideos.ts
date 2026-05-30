@@ -319,6 +319,83 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
     'https://www.youtube.com/watch?v=wiFNA3sqjCA',
     'core'
   ),
+
+  // ============================================================
+  // AGREGADOS (videos de técnica, reemplazables desde la app)
+  // ============================================================
+  entry(
+    'Mountain climbers',
+    [
+      'mountain climbers',
+      'mountain climber',
+      'escaladores',
+      'escalador',
+    ],
+    'https://www.youtube.com/watch?v=mHg0OEUnLhw',
+    'core'
+  ),
+  entry(
+    'Crunch bicicleta',
+    [
+      'crunch bicicleta',
+      'abdominal bicicleta',
+      'abdominales bicicleta',
+      'bicicleta abdominal',
+      'bicycle crunch',
+    ],
+    'https://www.youtube.com/watch?v=NgEvyVYCfmY',
+    'core'
+  ),
+  entry(
+    'Curl femoral en máquina',
+    [
+      'curl femoral',
+      'curl femoral en maquina',
+      'curl femoral tumbado',
+      'curl femoral acostado',
+      'curl femoral sentado',
+      'femoral en maquina',
+      'curl de pierna',
+    ],
+    'https://www.youtube.com/watch?v=sRMO3SbTqjk',
+    'pierna'
+  ),
+  entry(
+    'Patada de glúteo en máquina',
+    [
+      'patada de gluteo en maquina',
+      'patada gluteo en maquina',
+      'patada de gluteo maquina',
+      'patada gluteo maquina',
+    ],
+    'https://www.youtube.com/watch?v=RT5ZuVCy5Ac',
+    'gluteo'
+  ),
+  entry(
+    'Abducción en máquina multicadera',
+    [
+      'abduccion en maquina multicadera',
+      'abduccion maquina multicadera',
+      'abduccion multicadera',
+      'multicadera',
+      'abduccion de cadera en maquina',
+      'abduccion en maquina',
+    ],
+    'https://www.youtube.com/watch?v=2vCRMi-lgJ4',
+    'gluteo'
+  ),
+  entry(
+    'Press francés con mancuernas',
+    [
+      'press frances con mancuernas',
+      'press frances mancuernas',
+      'press frances',
+      'extension de triceps tumbado',
+      'french press',
+    ],
+    'https://www.youtube.com/watch?v=HAyqcljtJuo',
+    'brazos'
+  ),
 ];
 
 /**

@@ -105,6 +105,25 @@ export interface Serie {
 }
 
 // ============================================================
+// Comentario de ejercicio (nota de la sesión)
+// ============================================================
+
+/**
+ * Nota libre que la persona escribe sobre un ejercicio DURANTE una sesión.
+ * Es por sesión: la nota de hoy no pisa la de la semana pasada.
+ * Se usa para anotar ajustes o dudas para consultarle al PT después.
+ *
+ * id determinístico = `${sesionId}__${ejercicioId}` para upsert directo.
+ */
+export interface ComentarioEjercicio {
+  id: string;
+  sesionId: string; // FK -> Sesion
+  ejercicioId: string; // FK -> Ejercicio
+  texto: string;
+  fechaActualizacion: number; // timestamp ms
+}
+
+// ============================================================
 // Tipos derivados (no se persisten, se computan)
 // ============================================================
 

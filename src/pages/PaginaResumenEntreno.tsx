@@ -62,11 +62,11 @@ export function PaginaResumenEntreno() {
         <div className="text-center mb-6">
           <div
             className={`w-20 h-20 rounded-full inline-flex items-center justify-center ${
-              completado ? 'bg-emerald-950' : 'bg-emerald-950'
+              completado ? 'bg-accent-muted' : 'bg-accent-muted'
             }`}
           >
             {completado ? (
-              <svg width="42" height="42" viewBox="0 0 24 24" fill="#fbbf24">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="#caa05a">
                 <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v3H5v-3z"/>
               </svg>
             ) : (
@@ -75,7 +75,7 @@ export function PaginaResumenEntreno() {
                 height="42"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#10b981"
+                stroke="#c97b84"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -99,20 +99,20 @@ export function PaginaResumenEntreno() {
         <div
           className={`rounded-2xl p-5 mb-4 text-center border ${
             completado
-              ? 'bg-emerald-950/40 border-accent'
+              ? 'bg-accent-muted border-accent'
               : 'bg-bg-elevated border-bg-subtle'
           }`}
         >
           <p
             className={`text-[11px] uppercase tracking-wider mb-3 ${
-              completado ? 'text-emerald-200' : 'text-fg-subtle'
+              completado ? 'text-accent' : 'text-fg-subtle'
             }`}
           >
             Esta semana
           </p>
           <p className="text-4xl font-medium mb-3">
             {estado.entrenosCompletados}{' '}
-            <span className={completado ? 'text-emerald-200 text-xl' : 'text-fg-subtle text-xl'}>
+            <span className={completado ? 'text-accent text-xl' : 'text-fg-subtle text-xl'}>
               / {estado.objetivo}
             </span>
           </p>
@@ -139,19 +139,19 @@ export function PaginaResumenEntreno() {
             </p>
           )}
           {completado && (
-            <p className="text-emerald-200 text-xs mt-4">Objetivo cumplido 🔥</p>
+            <p className="text-accent text-xs mt-4">Objetivo cumplido 🔥</p>
           )}
         </div>
 
         {/* Alerta si no llega */}
         {noLlega && (
-          <div className="rounded-2xl p-4 mb-4 bg-red-950/40 border border-red-800 flex items-start gap-3">
+          <div className="rounded-2xl p-4 mb-4 bg-danger-muted border border-danger/40 flex items-start gap-3">
             <svg
               width="22"
               height="22"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#ef4444"
+              stroke="#cf6b63"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -162,10 +162,10 @@ export function PaginaResumenEntreno() {
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <div>
-              <p className="text-red-300 text-sm font-medium mb-1">
+              <p className="text-danger-ink text-sm font-medium mb-1">
                 No vas a llegar al objetivo
               </p>
-              <p className="text-red-300/80 text-xs leading-relaxed">
+              <p className="text-danger-ink/80 text-xs leading-relaxed">
                 Te quedan {estado.objetivo - estado.entrenosCompletados} entrenos
                 para hacer en {estado.diasRestantes}{' '}
                 {estado.diasRestantes === 1 ? 'día' : 'días'}. Cerrá la semana
@@ -179,7 +179,7 @@ export function PaginaResumenEntreno() {
 
         <button
           onClick={() => navigate(RUTAS.home, { replace: true })}
-          className="w-full bg-accent text-emerald-950 py-4 rounded-xl text-base font-medium"
+          className="w-full bg-accent text-accent-ink py-4 rounded-xl text-base font-medium"
         >
           Volver al inicio
         </button>
