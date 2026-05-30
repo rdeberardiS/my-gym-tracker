@@ -26,6 +26,7 @@ export interface EjercicioParseado {
   series?: number;
   reps?: string; // se guarda como texto (soporta "8", "8-10", "AMRAP", etc.)
   pesoSugerido?: number; // kg
+  intensidad?: number; // 1 a 5, opcional (la indica el coach en el texto)
   // Si estado != 'ok', este campo trae el texto crudo y razón:
   textoOriginal?: string;
   motivoRevision?: string; // ej: "Peso convertido de libras"

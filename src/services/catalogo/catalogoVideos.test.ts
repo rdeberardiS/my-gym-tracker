@@ -91,10 +91,10 @@ describe('extraerIdYoutube', () => {
 });
 
 describe('urlEmbed', () => {
-  it('construye URL embed válida', () => {
-    expect(urlEmbed('https://www.youtube.com/watch?v=abc12345678')).toBe(
-      'https://www.youtube.com/embed/abc12345678'
-    );
+  it('construye URL embed válida (dominio sin cookies + playsinline)', () => {
+    const embed = urlEmbed('https://www.youtube.com/watch?v=abc12345678');
+    expect(embed).toContain('youtube-nocookie.com/embed/abc12345678');
+    expect(embed).toContain('playsinline=1');
   });
 
   it('devuelve null para URL inválida', () => {

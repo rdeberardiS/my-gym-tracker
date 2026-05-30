@@ -17,12 +17,14 @@ export function ModalEditarEjercicio({
   const [nombre, setNombre] = useState('');
   const [series, setSeries] = useState('');
   const [reps, setReps] = useState('');
+  const [intensidad, setIntensidad] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (ejercicio) {
       setNombre(ejercicio.nombre ?? '');
       setSeries(String(ejercicio.series ?? ''));
       setReps(ejercicio.reps ?? '');
+      setIntensidad(ejercicio.intensidad);
     }
   }, [ejercicio]);
 
@@ -39,6 +41,7 @@ export function ModalEditarEjercicio({
       nombre: nombre.trim(),
       series: seriesNum,
       reps: reps.trim(),
+      ...(intensidad ? { intensidad } : { intensidad: undefined }),
     });
     onCerrar();
   };
@@ -85,6 +88,35 @@ export function ModalEditarEjercicio({
               className="w-full bg-bg border border-bg-subtle text-fg px-3 py-3 rounded-lg text-sm focus:outline-none focus:border-fg-muted"
             />
           </div>
+        </div>
+
+        <label className="block text-fg-muted text-xs mb-1.5">
+          Intensidad <span className="text-fg-subtle">(opcional, 1 a 5)</span>
+        </label>
+        <div className="flex gap-2 mb-5">
+          <button
+            onClick={() => setIntensidad(undefined)}
+            className={`flex-1 py-2.5 rounded-lg text-sm border ${
+              intensidad === undefined
+                ? 'bg-bg-subtle border-fg-muted text-fg'
+                : 'bg-bg border-bg-subtle text-fg-muted'
+            }`}
+          >
+            —
+          </button>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              onClick={() => setIntensidad(n)}
+              className={`flex-1 py-2.5 rounded-lg text-sm border ${
+                intensidad === n
+                  ? 'bg-accent text-emerald-950 border-accent font-semibold'
+                  : 'bg-bg border-bg-subtle text-fg'
+              }`}
+            >
+              {n}
+            </button>
+          ))}
         </div>
 
         <button

@@ -75,6 +75,7 @@ export interface EjercicioEnDiaRutina {
   seriesPrescriptas: number; // ej: 4
   repsPrescriptas: string; // texto: "8", "8-10", "AMRAP", etc.
   pesoSugerido?: number; // opcional, si el coach lo indicó
+  intensidad?: number; // 1 a 5, opcional (esfuerzo que pide el coach)
 }
 
 // ============================================================

@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { Pantalla } from '@/components/Pantalla';
 import { Header } from '@/components/Header';
 import { ModalEditarEjercicio } from '@/components/ModalEditarEjercicio';
+import { Intensidad } from '@/components/Intensidad';
 import { useImportacionStore } from '@/stores/importacionStore';
 import { importarRutina } from '@/db/repositorios/rutinaRepo';
 import { RUTAS } from '@/rutas';
@@ -257,6 +258,7 @@ export function PaginaPreviewRutina() {
                         }
                       >
                         <span className="text-sm">{ej.nombre}</span>
+                        {ej.intensidad && <Intensidad valor={ej.intensidad} tamano="sm" />}
                         <span className="text-fg-subtle text-xs">✎</span>
                       </div>
                       <div className="flex items-center gap-3">

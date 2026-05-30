@@ -97,6 +97,9 @@ export async function importarRutina(datos: DatosImportacion): Promise<RutinaImp
             ...(ej.pesoSugerido !== undefined
               ? { pesoSugerido: ej.pesoSugerido }
               : {}),
+            ...(ej.intensidad !== undefined
+              ? { intensidad: ej.intensidad }
+              : {}),
           };
           await db.ejerciciosEnDiaRutina.put(enDia);
         }

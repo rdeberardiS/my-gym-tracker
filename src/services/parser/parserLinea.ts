@@ -15,6 +15,7 @@ import {
   REGEX_SERIES_X_REPS,
   REGEX_PESO,
   REGEX_PREFIJO_LISTA,
+  REGEX_INTENSIDAD,
   LIMITES,
   LB_A_KG,
 } from './patrones';
@@ -115,13 +116,43 @@ export function pareceTextoNarrativo(linea: string): boolean {
 }
 
 /**
+ * Extrae la intensidad (1 a 5) de una línea, si está presente, y devuelve
+ * la línea sin ese token para que no contamine el nombre del ejercicio.
+ *
+ * Ej: "Hip thrust 4x8 i4" -> { intensidad: 4, lineaSinIntensidad: "Hip thrust 4x8" }
+ *     "Sentadilla 3x10"    -> { intensidad: undefined, lineaSinIntensidad: "Sentadilla 3x10" }
+ */
+function extraerIntensidad(linea: string): {
+  intensidad: number | undefined;
+  lineaSinIntensidad: string;
+} {
+  const match = linea.match(REGEX_INTENSIDAD);
+  if (!match) {
+    return { intensidad: undefined, lineaSinIntensidad: linea };
+  }
+  const valor = Number(match[1] ?? match[2]);
+  const intensidad = valor >= 1 && valor <= 5 ? valor : undefined;
+  // Quitamos el token detectado y colapsamos espacios sobrantes
+  const lineaSinIntensidad = linea
+    .replace(REGEX_INTENSIDAD, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return { intensidad, lineaSinIntensidad };
+}
+
+/**
  * Parsea una línea de ejercicio.
  *
  * @param linea - Línea cruda (puede tener prefijo de lista, espacios, etc.)
  * @returns EjercicioParseado con su estado
  */
 export function parsearLineaEjercicio(linea: string): EjercicioParseado {
-  const lineaLimpia = quitarPrefijoLista(linea).trim();
+  const lineaSinPrefijo = quitarPrefijoLista(linea).trim();
+
+  // Extraemos la intensidad PRIMERO y la quitamos, así no interfiere con
+  // el nombre ni con la detección de series/reps/peso.
+  const { intensidad, lineaSinIntensidad } = extraerIntensidad(lineaSinPrefijo);
+  const lineaLimpia = lineaSinIntensidad;
 
   if (!lineaLimpia) {
     return {
@@ -220,6 +251,7 @@ export function parsearLineaEjercicio(linea: string): EjercicioParseado {
       series: seriesNum,
       reps: repsStr,
       pesoSugerido,
+      ...(intensidad !== undefined ? { intensidad } : {}),
       textoOriginal: linea,
       motivoRevision: 'Posible esquema múltiple (drop set, periodización), tomamos solo el primero',
     };
@@ -233,6 +265,7 @@ export function parsearLineaEjercicio(linea: string): EjercicioParseado {
       series: seriesNum,
       reps: repsStr,
       pesoSugerido,
+      ...(intensidad !== undefined ? { intensidad } : {}),
       textoOriginal: linea,
       motivoRevision: `Número de series alto (${seriesNum}), verificar`,
     };
@@ -244,6 +277,7 @@ export function parsearLineaEjercicio(linea: string): EjercicioParseado {
     series: seriesNum,
     reps: repsStr,
     pesoSugerido,
+    ...(intensidad !== undefined ? { intensidad } : {}),
     ...(motivoRevision ? { motivoRevision } : {}),
   };
 }

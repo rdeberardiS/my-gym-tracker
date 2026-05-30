@@ -180,4 +180,61 @@ describe('parsearLineaEjercicio', () => {
       expect(r.nombre).toBe('Press inclinado con mancuernas');
     });
   });
+
+  describe('intensidad', () => {
+    it('detecta forma corta "i4" al final', () => {
+      const r = parsearLineaEjercicio('Hip thrust con barra 4x8 i4');
+      expect(r.estado).toBe('ok');
+      expect(r.nombre).toBe('Hip thrust con barra');
+      expect(r.series).toBe(4);
+      expect(r.reps).toBe('8');
+      expect(r.intensidad).toBe(4);
+    });
+
+    it('detecta "I2" en mayúscula', () => {
+      const r = parsearLineaEjercicio('Sentadilla 3x10 I2');
+      expect(r.estado).toBe('ok');
+      expect(r.intensidad).toBe(2);
+    });
+
+    it('detecta forma explícita "intensidad 5"', () => {
+      const r = parsearLineaEjercicio('Peso muerto 5x5 intensidad 5');
+      expect(r.estado).toBe('ok');
+      expect(r.intensidad).toBe(5);
+      expect(r.nombre).toBe('Peso muerto');
+    });
+
+    it('detecta "int:3"', () => {
+      const r = parsearLineaEjercicio('Remo 4x12 int:3');
+      expect(r.estado).toBe('ok');
+      expect(r.intensidad).toBe(3);
+    });
+
+    it('sin intensidad queda undefined', () => {
+      const r = parsearLineaEjercicio('Curl bíceps 3x12');
+      expect(r.estado).toBe('ok');
+      expect(r.intensidad).toBeUndefined();
+    });
+
+    it('ignora valores fuera de 1-5 y no rompe el parseo', () => {
+      const r = parsearLineaEjercicio('Press 3x10');
+      expect(r.estado).toBe('ok');
+      expect(r.intensidad).toBeUndefined();
+    });
+
+    it('no confunde la "i" de una palabra con intensidad', () => {
+      const r = parsearLineaEjercicio('Press inclinado 3x10');
+      expect(r.estado).toBe('ok');
+      expect(r.nombre).toBe('Press inclinado');
+      expect(r.intensidad).toBeUndefined();
+    });
+
+    it('detecta intensidad junto con peso', () => {
+      const r = parsearLineaEjercicio('Hip thrust 4x8 60kg i4');
+      expect(r.estado).toBe('ok');
+      expect(r.pesoSugerido).toBe(60);
+      expect(r.intensidad).toBe(4);
+      expect(r.nombre).toBe('Hip thrust');
+    });
+  });
 });

@@ -89,6 +89,27 @@ export const REGEX_SERIES_X_REPS =
 export const REGEX_PESO = /@?\s*(\d+(?:[.,]\d+)?)\s*(kgs?|lbs?)\b/i;
 
 /**
+ * Detecta la "intensidad" del ejercicio (1 a 5) que el coach escribe en la línea.
+ *
+ * Formato recomendado al coach: una "i" pegada al número, como token suelto.
+ *   "Hip thrust 4x8 i4"   -> intensidad 4
+ *   "Sentadilla 3x10 I2"  -> intensidad 2
+ *
+ * También acepta variantes más explícitas:
+ *   "intensidad 4", "intensidad: 4", "int 4", "int:4"
+ *
+ * Captura:
+ *   grupo 1 (forma corta "i4")  -> el dígito 1-5
+ *   grupo 2 (forma "intensidad 4") -> el dígito 1-5
+ *
+ * Diseño conservador: solo 1 a 5. Cualquier otro número se ignora.
+ * El token debe estar aislado (rodeado de espacios o bordes) para no
+ * confundirlo con partes del nombre del ejercicio.
+ */
+export const REGEX_INTENSIDAD =
+  /(?:^|\s)(?:i([1-5])|(?:intensidad|int)\s*:?\s*([1-5]))(?=\s|$)/i;
+
+/**
  * Prefijos comunes a remover al inicio de una línea de ejercicio.
  *
  * Acepta: "- ", "• ", "* ", "1. ", "1) ", "1- "

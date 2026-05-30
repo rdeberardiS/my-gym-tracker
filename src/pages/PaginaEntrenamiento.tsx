@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Pantalla } from '@/components/Pantalla';
 import { Header } from '@/components/Header';
+import { Intensidad } from '@/components/Intensidad';
 import { db } from '@/db/schema';
 import { iniciarSesion, terminarSesion, obtenerSeriesDeSesion } from '@/db/repositorios/sesionRepo';
 import {
@@ -204,13 +205,18 @@ export function PaginaEntrenamiento() {
                   <p className={`text-sm font-medium truncate ${hecho ? 'text-accent' : 'text-fg'}`}>
                     {fila.ejercicio.nombre}
                   </p>
-                  <p className="text-xs text-fg-muted mt-0.5">
-                    {hecho
-                      ? `${fila.seriesHechas} ${
-                          fila.seriesHechas === 1 ? 'serie hecha' : 'series hechas'
-                        }`
-                      : `${fila.enDia.seriesPrescriptas} × ${fila.enDia.repsPrescriptas}`}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-fg-muted">
+                      {hecho
+                        ? `${fila.seriesHechas} ${
+                            fila.seriesHechas === 1 ? 'serie hecha' : 'series hechas'
+                          }`
+                        : `${fila.enDia.seriesPrescriptas} × ${fila.enDia.repsPrescriptas}`}
+                    </p>
+                    {!hecho && fila.enDia.intensidad && (
+                      <Intensidad valor={fila.enDia.intensidad} tamano="sm" />
+                    )}
+                  </div>
                 </div>
                 <div className="ml-3 text-fg-subtle">
                   {hecho ? (

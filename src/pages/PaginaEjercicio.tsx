@@ -1,16 +1,20 @@
 /**
  * Pantalla del Ejercicio durante el entrenamiento.
  *
- * Esta es la pantalla más usada y crítica. Decisiones de diseño cerradas:
- *  - Peso pre-rellenado con el ÚLTIMO peso usado (la moda de la última sesión)
- *  - Si es la primera vez con el ejercicio: peso vacío (placeholder)
- *  - Grilla de cajitas con peso pre-cargado en todas, vos solo tocás para "marcar"
- *  - Steppers [-2.5] [+2.5] para ajustar peso global
- *  - Botón "Ver técnica" con video embebido arriba (modo A)
- *  - Botón verde "Registrar ejercicio" al final que cierra y vuelve a la lista
+ * Esta es la pantalla más usada y crítica. Pensada para usar CON UNA MANO,
+ * mientras la persona entrena. Por eso la carga tiene que ser de un toque.
  *
- * Una "serie marcada" se considera con peso (el del input) y reps (las prescriptas
- * o lo que el usuario haya escrito).
+ * Cómo funciona el registro (rediseñado por feedback de uso real):
+ *  - Hay un peso grande arriba ("Peso para todas las series") con −2.5 / +2.5.
+ *    Ese peso se aplica a TODAS las series que todavía no registraste.
+ *  - Tocás una cajita de serie => queda registrada con el peso de arriba.
+ *    Tocás de nuevo => se desmarca.
+ *  - Botón grande "Registrar las N series": marca todas de una sola vez.
+ *  - Si una serie necesita otro peso: registrás las que van con un peso,
+ *    cambiás el peso de arriba, y registrás las que faltan. Cada serie
+ *    conserva el peso que tenía cuando la marcaste.
+ *
+ * Una serie registrada guarda su peso (el de arriba) y las reps prescriptas.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -18,6 +22,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Pantalla } from '@/components/Pantalla';
 import { Header } from '@/components/Header';
 import { ModalCambiarVideo } from '@/components/ModalCambiarVideo';
+import { VideoTecnica } from '@/components/VideoTecnica';
+import { Intensidad } from '@/components/Intensidad';
 import { db } from '@/db/schema';
 import {
   obtenerSeriesDeSesion,
@@ -28,7 +34,6 @@ import {
   actualizarVideoEjercicio,
   obtenerEjercicio,
 } from '@/db/repositorios/ejercicioRepo';
-import { urlEmbed } from '@/services/catalogo/catalogoVideos';
 import { RUTAS } from '@/rutas';
 import type {
   Ejercicio,
@@ -69,6 +74,11 @@ function parsearRepsObjetivo(reps: string): number {
   return 0;
 }
 
+/** Formatea 10 -> "10", 12.5 -> "12.5" (sin ".0" innecesario) */
+function fmtPeso(n: number): string {
+  return Number.isInteger(n) ? String(n) : String(n);
+}
+
 export function PaginaEjercicio() {
   const navigate = useNavigate();
   const params = useParams<{ diaRutinaId: string; ejercicioEnDiaId: string }>();
@@ -81,14 +91,9 @@ export function PaginaEjercicio() {
   const [ultimaVez, setUltimaVez] = useState<ResumenUltimaVez | null>(null);
   const [seriesEnPantalla, setSeriesEnPantalla] = useState<SerieEnPantalla[]>([]);
   const [pesoGlobal, setPesoGlobal] = useState<number>(0);
-  const [pesoCustomIndices, setPesoCustomIndices] = useState<Set<number>>(new Set());
   const [mostrarVideo, setMostrarVideo] = useState(false);
   const [modalVideoAbierto, setModalVideoAbierto] = useState(false);
-  const [editandoSerie, setEditandoSerie] = useState<number | null>(null);
-  const [valoresEdicion, setValoresEdicion] = useState<{ peso: string; reps: string }>({
-    peso: '',
-    reps: '',
-  });
+  const [guardandoTodas, setGuardandoTodas] = useState(false);
 
   useEffect(() => {
     cargar();
@@ -163,32 +168,30 @@ export function PaginaEjercicio() {
     }
   };
 
-  // Cuando cambia el peso global, propagamos a todas las series no marcadas y sin peso custom
+  // Cuando cambia el peso global, lo propagamos a todas las series NO marcadas.
+  // Las marcadas conservan el peso con el que se registraron.
   const ajustarPesoGlobal = (delta: number) => {
     const nuevo = Math.max(0, +(pesoGlobal + delta).toFixed(2));
     setPesoGlobal(nuevo);
     setSeriesEnPantalla((prev) =>
-      prev.map((s, i) => {
-        if (s.marcada) return s;
-        if (pesoCustomIndices.has(i)) return s;
-        return { ...s, peso: nuevo };
-      })
+      prev.map((s) => (s.marcada ? s : { ...s, peso: nuevo }))
     );
   };
 
+  // Registra una serie con el peso actual (el de arriba).
   const marcarSerie = async (idx: number) => {
     if (!ejercicio || !sesionId || !prescripcion) return;
     const s = seriesEnPantalla[idx];
     if (s.marcada) return;
 
-    // Si reps es 0 (AMRAP), pedimos que edite primero
-    const repsAGuardar = s.reps > 0 ? s.reps : parsearRepsObjetivo(prescripcion.repsPrescriptas) || 8;
+    const repsAGuardar =
+      s.reps > 0 ? s.reps : parsearRepsObjetivo(prescripcion.repsPrescriptas) || 8;
 
     const serieGuardada = await registrarSerie({
       sesionId,
       ejercicioId: ejercicio.id,
       numeroSerie: s.numero,
-      peso: s.peso,
+      peso: pesoGlobal,
       reps: repsAGuardar,
     });
 
@@ -197,6 +200,7 @@ export function PaginaEjercicio() {
         i === idx
           ? {
               ...sp,
+              peso: pesoGlobal,
               marcada: true,
               reps: repsAGuardar,
               serieGuardadaId: serieGuardada.id,
@@ -212,43 +216,61 @@ export function PaginaEjercicio() {
     await db.series.delete(s.serieGuardadaId);
     setSeriesEnPantalla((prev) =>
       prev.map((sp, i) =>
-        i === idx ? { ...sp, marcada: false, serieGuardadaId: undefined } : sp
+        i === idx
+          ? { ...sp, marcada: false, serieGuardadaId: undefined, peso: pesoGlobal }
+          : sp
       )
     );
   };
 
-  const abrirEdicion = (idx: number) => {
+  const alternarSerie = (idx: number) => {
     const s = seriesEnPantalla[idx];
-    setEditandoSerie(idx);
-    setValoresEdicion({ peso: String(s.peso), reps: String(s.reps) });
+    if (s.marcada) {
+      desmarcarSerie(idx);
+    } else {
+      marcarSerie(idx);
+    }
   };
 
-  const guardarEdicion = async () => {
-    if (editandoSerie === null || !ejercicio || !sesionId) return;
-    const nuevoPeso = parseFloat(valoresEdicion.peso.replace(',', '.'));
-    const nuevoReps = parseInt(valoresEdicion.reps, 10);
-    if (isNaN(nuevoPeso) || isNaN(nuevoReps) || nuevoPeso < 0 || nuevoReps < 0) {
-      setEditandoSerie(null);
-      return;
+  // Registra de una sola vez todas las series que faltan, con el peso de arriba.
+  const registrarTodas = async () => {
+    if (!ejercicio || !sesionId || !prescripcion || guardandoTodas) return;
+    setGuardandoTodas(true);
+    try {
+      const repsFallback =
+        parsearRepsObjetivo(prescripcion.repsPrescriptas) || 8;
+      const actualizaciones: { idx: number; id: string; reps: number }[] = [];
+
+      for (let i = 0; i < seriesEnPantalla.length; i++) {
+        const s = seriesEnPantalla[i];
+        if (s.marcada) continue;
+        const repsAGuardar = s.reps > 0 ? s.reps : repsFallback;
+        const guardada = await registrarSerie({
+          sesionId,
+          ejercicioId: ejercicio.id,
+          numeroSerie: s.numero,
+          peso: pesoGlobal,
+          reps: repsAGuardar,
+        });
+        actualizaciones.push({ idx: i, id: guardada.id, reps: repsAGuardar });
+      }
+
+      setSeriesEnPantalla((prev) =>
+        prev.map((sp, i) => {
+          const upd = actualizaciones.find((a) => a.idx === i);
+          if (!upd) return sp;
+          return {
+            ...sp,
+            peso: pesoGlobal,
+            reps: upd.reps,
+            marcada: true,
+            serieGuardadaId: upd.id,
+          };
+        })
+      );
+    } finally {
+      setGuardandoTodas(false);
     }
-
-    const s = seriesEnPantalla[editandoSerie];
-
-    // Si ya estaba marcada, hay que actualizar la serie en DB
-    if (s.marcada && s.serieGuardadaId) {
-      await db.series.update(s.serieGuardadaId, {
-        peso: nuevoPeso,
-        reps: nuevoReps,
-      });
-    }
-
-    setPesoCustomIndices((prev) => new Set([...prev, editandoSerie]));
-    setSeriesEnPantalla((prev) =>
-      prev.map((sp, i) =>
-        i === editandoSerie ? { ...sp, peso: nuevoPeso, reps: nuevoReps } : sp
-      )
-    );
-    setEditandoSerie(null);
   };
 
   const cambiarVideo = async (nuevoUrl: string | null) => {
@@ -259,6 +281,16 @@ export function PaginaEjercicio() {
 
   const todasMarcadas = useMemo(
     () => seriesEnPantalla.length > 0 && seriesEnPantalla.every((s) => s.marcada),
+    [seriesEnPantalla]
+  );
+
+  const algunaMarcada = useMemo(
+    () => seriesEnPantalla.some((s) => s.marcada),
+    [seriesEnPantalla]
+  );
+
+  const faltantes = useMemo(
+    () => seriesEnPantalla.filter((s) => !s.marcada).length,
     [seriesEnPantalla]
   );
 
@@ -282,15 +314,13 @@ export function PaginaEjercicio() {
 
   if (!ejercicio || !prescripcion) return null;
 
-  const videoEmbed = ejercicio.videoUrl ? urlEmbed(ejercicio.videoUrl) : null;
-
   return (
     <Pantalla>
       <Header titulo="Ejercicio" />
 
       <div className="px-4 pt-3 pb-32 flex-1">
         {/* Botón Video */}
-        {ejercicio.videoUrl && videoEmbed && (
+        {ejercicio.videoUrl && (
           <>
             <button
               onClick={() => setMostrarVideo((v) => !v)}
@@ -300,20 +330,15 @@ export function PaginaEjercicio() {
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
               <span className="text-fg text-sm font-medium">
-                {mostrarVideo ? 'Ocultar video' : 'Ver técnica en YouTube'}
+                {mostrarVideo ? 'Ocultar video' : 'Ver técnica'}
               </span>
             </button>
 
             {mostrarVideo && (
-              <div className="mb-4 rounded-xl overflow-hidden bg-black aspect-video">
-                <iframe
-                  src={videoEmbed}
-                  title={`Video de ${ejercicio.nombre}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              </div>
+              <VideoTecnica
+                videoUrl={ejercicio.videoUrl}
+                nombreEjercicio={ejercicio.nombre}
+              />
             )}
           </>
         )}
@@ -331,9 +356,14 @@ export function PaginaEjercicio() {
         <h1 className="text-xl font-medium tracking-tight mb-1">
           {ejercicio.nombre}
         </h1>
-        <p className="text-fg-muted text-xs mb-1">
-          {prescripcion.seriesPrescriptas} × {prescripcion.repsPrescriptas}
-        </p>
+        <div className="flex items-center gap-3 mb-1">
+          <p className="text-fg-muted text-xs">
+            {prescripcion.seriesPrescriptas} × {prescripcion.repsPrescriptas}
+          </p>
+          {prescripcion.intensidad && (
+            <Intensidad valor={prescripcion.intensidad} tamano="sm" conEtiqueta />
+          )}
+        </div>
         {ultimaVez && ultimaVez.fechaUltimaVez && (
           <p className="text-fg-subtle text-xs mb-4">
             Última vez: {ultimaVez.textoReferencia} · {ultimaVez.hace}
@@ -355,41 +385,51 @@ export function PaginaEjercicio() {
         )}
 
         {/* Stepper de peso global */}
-        <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-4 mb-5">
+        <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-4 mb-4">
           <p className="text-fg-muted text-xs mb-2">Peso para todas las series</p>
           <div className="flex items-center justify-between gap-3">
             <button
               onClick={() => ajustarPesoGlobal(-2.5)}
-              className="bg-bg border border-bg-subtle text-fg w-14 h-12 rounded-lg text-base font-medium active:bg-bg-subtle"
+              className="bg-bg border border-bg-subtle text-fg w-16 h-14 rounded-lg text-lg font-medium active:bg-bg-subtle"
             >
               −2.5
             </button>
             <div className="flex-1 text-center">
-              <span className="text-3xl font-medium text-fg">{pesoGlobal}</span>
+              <span className="text-4xl font-medium text-fg">{fmtPeso(pesoGlobal)}</span>
               <span className="text-fg-muted text-sm ml-1">kg</span>
             </div>
             <button
               onClick={() => ajustarPesoGlobal(2.5)}
-              className="bg-bg border border-bg-subtle text-fg w-14 h-12 rounded-lg text-base font-medium active:bg-bg-subtle"
+              className="bg-bg border border-bg-subtle text-fg w-16 h-14 rounded-lg text-lg font-medium active:bg-bg-subtle"
             >
               +2.5
             </button>
           </div>
-          <p className="text-fg-subtle text-[11px] text-center mt-2">
-            Tocá una serie para registrarla. Mantené apretado para cambiarle el peso individual.
-          </p>
         </div>
+
+        {/* Botón grande: registrar todas de una */}
+        {!todasMarcadas && (
+          <button
+            onClick={registrarTodas}
+            disabled={guardandoTodas}
+            className="w-full mb-4 py-4 rounded-xl text-base font-semibold bg-accent text-emerald-950 active:opacity-80 disabled:opacity-50"
+          >
+            {guardandoTodas
+              ? 'Registrando...'
+              : `✓ Registrar ${faltantes === 1 ? 'la serie' : `las ${faltantes} series`} con ${fmtPeso(pesoGlobal)} kg`}
+          </button>
+        )}
+
+        <p className="text-fg-subtle text-[11px] text-center mb-3">
+          {todasMarcadas
+            ? '¡Listo! Tocá una serie si querés desmarcarla.'
+            : 'O tocá cada serie de a una para registrarla.'}
+        </p>
 
         {/* Grilla de series */}
         <div className="grid grid-cols-2 gap-2.5 mb-6">
           {seriesEnPantalla.map((s, idx) => (
-            <BotonSerie
-              key={idx}
-              serie={s}
-              onMarcar={() => marcarSerie(idx)}
-              onDesmarcar={() => desmarcarSerie(idx)}
-              onMantenerPresionado={() => abrirEdicion(idx)}
-            />
+            <BotonSerie key={idx} serie={s} onTocar={() => alternarSerie(idx)} />
           ))}
         </div>
       </div>
@@ -408,61 +448,11 @@ export function PaginaEjercicio() {
         >
           {todasMarcadas
             ? 'Ejercicio terminado · Volver'
-            : seriesEnPantalla.some((s) => s.marcada)
+            : algunaMarcada
             ? 'Guardar y volver'
             : 'Volver sin registrar'}
         </button>
       </div>
-
-      {/* Modal de edición de serie individual */}
-      {editandoSerie !== null && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 px-4"
-          onClick={() => setEditandoSerie(null)}
-        >
-          <div
-            className="bg-bg-elevated border border-bg-subtle rounded-2xl p-5 w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-fg font-medium text-base mb-4">
-              Serie {editandoSerie + 1}
-            </p>
-            <div className="flex gap-2.5 mb-5">
-              <div className="flex-1">
-                <label className="block text-fg-muted text-xs mb-1.5">Peso (kg)</label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  step="0.5"
-                  value={valoresEdicion.peso}
-                  onChange={(e) =>
-                    setValoresEdicion({ ...valoresEdicion, peso: e.target.value })
-                  }
-                  className="w-full bg-bg border border-bg-subtle text-fg px-3 py-3 rounded-lg text-sm focus:outline-none focus:border-fg-muted"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block text-fg-muted text-xs mb-1.5">Reps</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  value={valoresEdicion.reps}
-                  onChange={(e) =>
-                    setValoresEdicion({ ...valoresEdicion, reps: e.target.value })
-                  }
-                  className="w-full bg-bg border border-bg-subtle text-fg px-3 py-3 rounded-lg text-sm focus:outline-none focus:border-fg-muted"
-                />
-              </div>
-            </div>
-            <button
-              onClick={guardarEdicion}
-              className="w-full bg-accent text-emerald-950 py-3 rounded-lg text-sm font-medium"
-            >
-              Guardar
-            </button>
-          </div>
-        </div>
-      )}
 
       <ModalCambiarVideo
         abierto={modalVideoAbierto}
@@ -476,67 +466,20 @@ export function PaginaEjercicio() {
 }
 
 /**
- * Botón de una serie individual. Maneja:
- *  - clic corto: marca/desmarca como hecha
- *  - clic largo (long press): abre edición de peso/reps
+ * Botón de una serie individual. Un solo toque alterna registrada / no registrada.
+ * Sin menús ni ventanas: rápido y a prueba de errores mientras se entrena.
  */
 function BotonSerie({
   serie,
-  onMarcar,
-  onDesmarcar,
-  onMantenerPresionado,
+  onTocar,
 }: {
   serie: SerieEnPantalla;
-  onMarcar: () => void;
-  onDesmarcar: () => void;
-  onMantenerPresionado: () => void;
+  onTocar: () => void;
 }) {
-  const [presionando, setPresionando] = useState(false);
-  let timerId: ReturnType<typeof setTimeout> | null = null;
-
-  const onMouseDown = () => {
-    setPresionando(true);
-    timerId = setTimeout(() => {
-      setPresionando(false);
-      onMantenerPresionado();
-      timerId = null;
-    }, 500);
-  };
-
-  const onMouseUp = () => {
-    setPresionando(false);
-    if (timerId !== null) {
-      clearTimeout(timerId);
-      timerId = null;
-      // Era un tap corto
-      if (serie.marcada) {
-        onDesmarcar();
-      } else {
-        onMarcar();
-      }
-    }
-  };
-
-  const onMouseLeave = () => {
-    if (timerId !== null) {
-      clearTimeout(timerId);
-      timerId = null;
-    }
-    setPresionando(false);
-  };
-
   return (
     <button
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseLeave}
-      onTouchStart={onMouseDown}
-      onTouchEnd={onMouseUp}
-      onTouchCancel={onMouseLeave}
-      onContextMenu={(e) => e.preventDefault()}
-      className={`p-4 rounded-xl border text-left transition-all select-none ${
-        presionando ? 'scale-95' : ''
-      } ${
+      onClick={onTocar}
+      className={`p-4 rounded-xl border text-left transition-colors select-none active:scale-[0.98] ${
         serie.marcada
           ? 'bg-accent/15 border-accent text-fg'
           : 'bg-bg-elevated border-bg-subtle text-fg'
@@ -547,12 +490,15 @@ function BotonSerie({
           <p className="text-fg-muted text-[11px] uppercase tracking-wider mb-1">
             Serie {serie.numero}
           </p>
-          <p className="text-xl font-medium leading-none">{serie.peso}<span className="text-sm text-fg-muted ml-0.5">kg</span></p>
+          <p className="text-xl font-medium leading-none">
+            {fmtPeso(serie.peso)}
+            <span className="text-sm text-fg-muted ml-0.5">kg</span>
+          </p>
           <p className="text-xs text-fg-muted mt-1">× {serie.reps} reps</p>
         </div>
-        {serie.marcada && (
-          <span className="text-accent text-lg leading-none">✓</span>
-        )}
+        <span className={`text-lg leading-none ${serie.marcada ? 'text-accent' : 'text-fg-subtle'}`}>
+          {serie.marcada ? '✓' : '○'}
+        </span>
       </div>
     </button>
   );

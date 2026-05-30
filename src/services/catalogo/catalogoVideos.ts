@@ -392,5 +392,28 @@ export function extraerIdYoutube(url: string): string | null {
 export function urlEmbed(url: string): string | null {
   const id = extraerIdYoutube(url);
   if (!id) return null;
-  return `https://www.youtube.com/embed/${id}`;
+  // Usamos el dominio sin cookies (más liviano y más privado).
+  // playsinline=1 evita que iOS fuerce pantalla completa.
+  return `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0`;
+}
+
+/**
+ * Miniatura (thumbnail) liviana del video. Es una sola imagen (~15-30 KB)
+ * en vez del reproductor completo, ideal para gimnasios con poca señal.
+ * Devuelve la versión "hq" que existe para casi todos los videos.
+ */
+export function urlMiniatura(url: string): string | null {
+  const id = extraerIdYoutube(url);
+  if (!id) return null;
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+}
+
+/**
+ * URL normal de "ver en YouTube" (para abrir en la app de YouTube como
+ * alternativa si el reproductor embebido no carga).
+ */
+export function urlWatch(url: string): string | null {
+  const id = extraerIdYoutube(url);
+  if (!id) return null;
+  return `https://www.youtube.com/watch?v=${id}`;
 }
