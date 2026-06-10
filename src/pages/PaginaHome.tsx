@@ -25,6 +25,7 @@ import {
   finSemana,
 } from '@/db/queries/objetivoSemanal';
 import { listarSesionesValidasEnVentana } from '@/db/repositorios/sesionRepo';
+import { db } from '@/db/schema';
 import type {
   Rutina,
   DiaRutina,
@@ -39,7 +40,7 @@ export function PaginaHome() {
   const [diaSugerido, setDiaSugerido] = useState<DiaRutina | null>(null);
   const [todosLosDias, setTodosLosDias] = useState<DiaRutina[]>([]);
   const [estadoSemanal, setEstadoSemanal] = useState<EstadoSemanal | null>(null);
-  const [diasEntrenadosSemana, setDiasEntrenadosSemana] = useState<Set<string>>(
+  const [diasEntrenadosSemana, setDiasEntrenadosSemana] = useState<Set<number>>(
     new Set()
   );
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -72,10 +73,13 @@ export function PaginaHome() {
         setTodosLosDias(dias);
         setEstadoSemanal(semanal);
 
-        // Días (de la rutina) que ya entrené esta semana
-        const entrenados = new Set<string>();
+        // Días (por número de día) que ya entrené esta semana. Cruzamos por
+        // ORDEN y no por id, para que funcione aunque la rutina se haya
+        // reimportado (los días nuevos tienen ids distintos).
+        const entrenados = new Set<number>();
         for (const s of sesionesSemana) {
-          entrenados.add(s.diaRutinaId);
+          const d = await db.diasRutina.get(s.diaRutinaId);
+          if (d) entrenados.add(d.orden);
         }
         setDiasEntrenadosSemana(entrenados);
       }
@@ -284,7 +288,7 @@ export function PaginaHome() {
               Esta semana
             </p>
             {todosLosDias.map((d) => {
-              const hecho = diasEntrenadosSemana.has(d.id);
+              const hecho = diasEntrenadosSemana.has(d.orden);
               return (
                 <div
                   key={d.id}
