@@ -215,23 +215,31 @@ export function PaginaEntrenamiento() {
             onClick={abrirBloqueCore}
             className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border border-l-[5px] border-l-accent transition-colors ${
               coreHecho
-                ? 'bg-accent/10 border-fucsia/40'
-                : 'bg-accent-muted border-fucsia/40 hover:border-fucsia'
+                ? 'bg-fg border-fg'
+                : 'bg-bg-elevated border-bg-subtle hover:border-fg-subtle'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <p
-                  className={`text-sm font-medium ${
-                    coreHecho ? 'text-fucsia' : 'text-fucsia'
+                  className={`text-sm font-bold ${
+                    coreHecho ? 'text-white' : 'text-fg'
                   }`}
                 >
                   Abdominales
                 </p>
-                <p className="text-xs text-fg-muted mt-0.5 truncate">
+                <p
+                  className={`text-xs mt-0.5 truncate ${
+                    coreHecho ? 'text-white/60' : 'text-fg-muted'
+                  }`}
+                >
                   {filasCore.map((f) => f.ejercicio.nombre).join(' · ')}
                 </p>
-                <p className="text-[11px] text-fg-subtle mt-0.5">
+                <p
+                  className={`text-[11px] mt-0.5 ${
+                    coreHecho ? 'text-accent font-semibold' : 'text-fg-subtle'
+                  }`}
+                >
                   {coreHecho
                     ? `${coreSeriesHechas} ${
                         coreSeriesHechas === 1 ? 'serie hecha' : 'series hechas'
@@ -239,11 +247,13 @@ export function PaginaEntrenamiento() {
                     : `${filasCore.length} ejercicios · sin peso`}
                 </p>
               </div>
-              <div className="ml-3 text-fg-subtle">
+              <div className="ml-3">
                 {coreHecho ? (
-                  <span className="text-fucsia text-xl">✓</span>
+                  <span className="w-7 h-7 rounded-full bg-fucsia text-white flex items-center justify-center text-sm font-black">
+                    ✓
+                  </span>
                 ) : (
-                  <span className="text-fucsia">›</span>
+                  <span className="text-fg-subtle">›</span>
                 )}
               </div>
             </div>
@@ -258,17 +268,17 @@ export function PaginaEntrenamiento() {
               onClick={() => abrirEjercicio(fila)}
               className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border border-l-[5px] border-l-accent transition-colors ${
                 hecho
-                  ? 'bg-accent/10 border-fucsia/40'
+                  ? 'bg-fg border-fg'
                   : 'bg-bg-elevated border-bg-subtle hover:border-fg-subtle'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${hecho ? 'text-fucsia' : 'text-fg'}`}>
+                  <p className={`text-sm font-bold truncate ${hecho ? 'text-white' : 'text-fg'}`}>
                     {fila.ejercicio.nombre}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-xs text-fg-muted">
+                    <p className={`text-xs ${hecho ? 'text-accent font-semibold' : 'text-fg-muted'}`}>
                       {hecho
                         ? `${fila.seriesHechas} ${
                             fila.seriesHechas === 1 ? 'serie hecha' : 'series hechas'
@@ -280,11 +290,13 @@ export function PaginaEntrenamiento() {
                     )}
                   </div>
                 </div>
-                <div className="ml-3 text-fg-subtle">
+                <div className="ml-3">
                   {hecho ? (
-                    <span className="text-fucsia text-xl">✓</span>
+                    <span className="w-7 h-7 rounded-full bg-fucsia text-white flex items-center justify-center text-sm font-black">
+                      ✓
+                    </span>
                   ) : (
-                    <span>›</span>
+                    <span className="text-fg-subtle">›</span>
                   )}
                 </div>
               </div>
