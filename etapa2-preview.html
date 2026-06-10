@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#e7e4df;--card:#fff;--ink:#161616;--muted:#8c8c8c;--lime:#c2f000;--fucsia:#ff2486;--cyan:#17c9d4;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#cfcdc8;font-family:"Archivo",sans-serif;color:var(--ink);padding:26px 16px 50px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .intro{max-width:380px;text-align:center;margin-bottom:4px;}
+  .intro h2{font-weight:900;font-size:20px;margin-bottom:5px;letter-spacing:-.02em;}
+  .intro p{font-size:13.5px;color:#555;line-height:1.45;}
+  .name{font-weight:800;font-size:13px;margin:8px 4px 8px;color:#444;text-transform:uppercase;letter-spacing:.05em;width:100%;max-width:330px;}
+  .phone{width:100%;max-width:330px;background:var(--bg);border-radius:28px;padding:18px 15px 20px;box-shadow:0 14px 40px rgba(0,0,0,.3);position:relative;overflow:hidden;}
+
+  /* cartel record */
+  .record{margin:0 auto 14px;width:fit-content;border-radius:16px;padding:10px 18px;display:flex;align-items:center;gap:10px;background:var(--fucsia);color:#fff;box-shadow:0 8px 20px rgba(255,36,134,.4);}
+  .record .em{font-size:20px;}
+  .record b{font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:.04em;display:block;line-height:1;}
+  .record span{font-size:11px;opacity:.92;}
+
+  /* peso */
+  .wlabel{text-align:center;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-weight:700;}
+  .weight{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;}
+  .weight .v{font-weight:900;font-size:34px;}
+  .step{width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid #ddd;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+  /* timer cyan */
+  .timer{display:flex;align-items:center;gap:10px;border-radius:16px;padding:11px 14px;margin-bottom:12px;background:rgba(23,201,212,.10);border:1px solid rgba(23,201,212,.45);box-shadow:0 0 22px rgba(23,201,212,.16);}
+  .timer b{color:var(--cyan);font-weight:800;font-size:13.5px;white-space:nowrap;}
+  .timer .bar{flex:1;height:6px;border-radius:4px;background:rgba(23,201,212,.15);overflow:hidden;}
+  .timer .bar>i{display:block;height:100%;width:62%;background:var(--cyan);border-radius:4px;}
+  .timer .x{color:rgba(23,201,212,.7);font-size:16px;}
+  .btn{display:block;width:100%;border:none;font-family:"Archivo";font-weight:900;font-size:14px;padding:14px;border-radius:13px;text-transform:uppercase;letter-spacing:.03em;background:var(--lime);color:var(--ink);}
+
+  /* festejo */
+  .fest{text-align:center;padding-top:8px;}
+  .circ{width:84px;height:84px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:40px;margin:6px auto 14px;}
+  .fest h1{font-weight:900;font-size:24px;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:6px;}
+  .fest .sub{font-size:13px;color:#555;margin-bottom:18px;}
+  .box{background:#fff;border:1px solid var(--fucsia);border-radius:18px;padding:16px;margin-bottom:8px;}
+  .box .lab{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--fucsia);font-weight:700;margin-bottom:8px;}
+  .box .num{font-size:34px;font-weight:900;}
+  .box .num span{font-size:16px;color:var(--fucsia);}
+  .box .dots{display:flex;gap:8px;justify-content:center;margin-top:10px;}
+  .box .dots i{width:15px;height:15px;border-radius:50%;background:var(--lime);}
+  .conf{position:absolute;top:0;left:0;right:0;height:200px;pointer-events:none;}
+  .conf i{position:absolute;width:8px;height:5px;border-radius:1px;}
+</style></head>
+<body>
+  <div class="intro"><h2>Etapa 2 — lo nuevo ✨</h2><p>Cartel de récord, timer de descanso (cyan) y el festejo con confeti.</p></div>
+
+  <div class="name">Ejercicio · récord + timer</div>
+  <div class="phone">
+    <div class="record"><span class="em">🔥</span><div><b>¡Récord!</b><span>Superaste tu marca: 62.5 kg</span></div></div>
+    <div class="wlabel">Peso</div>
+    <div class="weight"><div class="step">−2.5</div><div class="v">62.5<span style="font-size:15px"> kg</span></div><div class="step">+2.5</div></div>
+    <div class="timer"><b>Descanso 0:45</b><span class="bar"><i></i></span><span style="color:var(--cyan);font-size:11px;font-weight:700">+15s</span><span class="x">✕</span></div>
+    <button class="btn">✓ Registrar las 3 series con 62.5 kg</button>
+  </div>
+
+  <div class="name">Festejo al cumplir la semana</div>
+  <div class="phone">
+    <div class="conf" id="conf"></div>
+    <div class="fest">
+      <div class="circ">🏆</div>
+      <h1>¡Semana completa!</h1>
+      <div class="sub">¡La rompiste! Cumpliste tu objetivo 🔥</div>
+      <div class="box"><div class="lab">Esta semana</div><div class="num">3 <span>/ 3</span></div><div class="dots"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
+
+<script>
+  var cols=['#c2f000','#ff2486','#17c9d4','#161616','#ffd23f'];
+  var c=document.getElementById('conf');
+  for(var i=0;i<40;i++){var s=document.createElement('i');s.style.left=Math.random()*100+'%';s.style.top=Math.random()*190+'px';s.style.background=cols[i%cols.length];s.style.transform='rotate('+Math.random()*360+'deg)';c.appendChild(s);}
+</script>
+</body></html>

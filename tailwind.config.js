@@ -9,7 +9,7 @@ export default {
         // Tema "Power" — claro, atlético (blanco · negro · lima · fucsia)
         // ============================================================
         bg: {
-          DEFAULT: '#eeedea', // gris muy claro (fondo)
+          DEFAULT: '#e7e4df', // gris claro (fondo, un poco menos blanco)
           elevated: '#ffffff', // tarjetas (blanco)
           subtle: '#e4e2de', // bordes / separadores suaves
         },
@@ -26,9 +26,15 @@ export default {
         },
         // Acento secundario: FUCSIA (toques). Legible como texto sobre claro.
         fucsia: {
-          DEFAULT: '#ff2d8b',
+          DEFAULT: '#ff2486',
           muted: '#ffe0ee',
           ink: '#ffffff',
+        },
+        // Cyan: solo para el timer de descanso / "en progreso"
+        cyan: {
+          DEFAULT: '#17c9d4',
+          muted: '#d6f6f8',
+          ink: '#08343a',
         },
         // Estados
         warn: {
@@ -48,7 +54,7 @@ export default {
           ink: '#161616',
         },
         caramel: {
-          DEFAULT: '#ff2d8b',
+          DEFAULT: '#ff2486',
           muted: '#ffe0ee',
           ink: '#ffffff',
         },
