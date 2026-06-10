@@ -30,7 +30,7 @@ export function Header({
     <div className="flex items-center justify-between px-4 py-4 border-b border-bg-subtle">
       <button
         onClick={irAtras}
-        className="text-accent text-sm flex items-center gap-1 py-1 min-w-[60px]"
+        className="text-fucsia text-sm flex items-center gap-1 py-1 min-w-[60px]"
       >
         <svg
           width="18"

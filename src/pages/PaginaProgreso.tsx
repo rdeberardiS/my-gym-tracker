@@ -328,7 +328,7 @@ export function PaginaProgreso() {
                   Día {resumen.diaRutinaOrden} · {resumen.diaRutinaNombre}
                 </p>
               </div>
-              <span className="bg-accent-muted text-accent text-[11px] px-2 py-1 rounded">
+              <span className="bg-accent-muted text-fucsia text-[11px] px-2 py-1 rounded">
                 Completado
               </span>
             </div>

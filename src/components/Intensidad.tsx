@@ -2,10 +2,7 @@
  * Indicador visual de intensidad de un ejercicio (1 a 5).
  *
  * Muestra 5 puntos; se rellenan tantos como la intensidad indicada.
- * Colores tipo semáforo, para leerlo de un vistazo:
- *   1     = gris  (suave)
- *   2-3   = amarillo (medio)
- *   4-5   = rojo  (fuerte)
+ * Escala gris → negro: cuanto más intenso, más oscuro el punto.
  *
  * Si no hay intensidad (undefined), no renderiza nada.
  */
@@ -18,11 +15,8 @@ interface IntensidadProps {
   conEtiqueta?: boolean;
 }
 
-function colorPorValor(valor: number): string {
-  if (valor >= 4) return 'bg-danger'; // rojo
-  if (valor >= 2) return 'bg-warn'; // amarillo
-  return 'bg-fg-muted'; // gris
-}
+/** Rampa de gris claro a negro (posición 1 → 5). */
+const RAMPA = ['#c4c2bd', '#9a988f', '#6e6c67', '#403e3b', '#161616'];
 
 export function Intensidad({ valor, tamano = 'sm', conEtiqueta = false }: IntensidadProps) {
   if (!valor || valor < 1) return null;
@@ -30,7 +24,6 @@ export function Intensidad({ valor, tamano = 'sm', conEtiqueta = false }: Intens
   const v = Math.min(5, Math.max(1, Math.round(valor)));
   const puntoClase = tamano === 'md' ? 'w-3.5 h-3.5' : 'w-2 h-2';
   const gap = tamano === 'md' ? 'gap-1.5' : 'gap-1';
-  const colorLleno = colorPorValor(v);
 
   return (
     <span className="inline-flex items-center gap-2" aria-label={`Intensidad ${v} de 5`}>
@@ -47,9 +40,8 @@ export function Intensidad({ valor, tamano = 'sm', conEtiqueta = false }: Intens
         {[1, 2, 3, 4, 5].map((i) => (
           <span
             key={i}
-            className={`rounded-full ${puntoClase} ${
-              i <= v ? colorLleno : 'bg-bg-subtle'
-            }`}
+            className={`rounded-full ${puntoClase} ${i <= v ? '' : 'bg-bg-subtle'}`}
+            style={i <= v ? { backgroundColor: RAMPA[i - 1] } : undefined}
           />
         ))}
       </span>

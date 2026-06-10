@@ -110,7 +110,7 @@ export function ModalEditarEjercicio({
               onClick={() => setIntensidad(n)}
               className={`flex-1 py-2.5 rounded-lg text-sm border ${
                 intensidad === n
-                  ? 'bg-accent text-accent-ink border-accent font-semibold'
+                  ? 'bg-accent text-accent-ink border-fucsia font-semibold'
                   : 'bg-bg border-bg-subtle text-fg'
               }`}
             >

@@ -12,6 +12,7 @@ import { PaginaEntrenamiento } from './pages/PaginaEntrenamiento';
 import { PaginaEjercicio } from './pages/PaginaEjercicio';
 import { PaginaBloqueAbdominales } from './pages/PaginaBloqueAbdominales';
 import { PaginaResumenEntreno } from './pages/PaginaResumenEntreno';
+import { PaginaMisEjercicios } from './pages/PaginaMisEjercicios';
 import { RUTAS } from './rutas';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <Route path={`${RUTAS.entrenamiento}/:diaRutinaId/ejercicio/:ejercicioEnDiaId`} element={<PaginaEjercicio />} />
         <Route path={`${RUTAS.entrenamiento}/:diaRutinaId/abdominales`} element={<PaginaBloqueAbdominales />} />
         <Route path={RUTAS.resumenEntreno} element={<PaginaResumenEntreno />} />
+        <Route path={RUTAS.misEjercicios} element={<PaginaMisEjercicios />} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />
       </Routes>
     </BrowserRouter>

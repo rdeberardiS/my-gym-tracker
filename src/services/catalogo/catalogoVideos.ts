@@ -78,7 +78,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'bicicleta abdominal',
       'bicycle crunch',
     ],
-    'https://www.youtube.com/watch?v=NgEvyVYCfmY',
+    'https://www.youtube.com/watch?v=dSp34wX3JpI',
     'core'
   ),
   entry(
@@ -93,7 +93,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'heel touches',
       'pinguinos',
     ],
-    'https://www.youtube.com/watch?v=xwOd_aj6KMc',
+    'https://www.youtube.com/watch?v=PmD8OjgsdrY',
     'core'
   ),
   entry(
@@ -106,7 +106,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'reverse crunch',
       'elevacion piernas tumbada',
     ],
-    'https://www.youtube.com/watch?v=009ABmp398k',
+    'https://www.youtube.com/watch?v=EZySfeq2uV4',
     'core'
   ),
   entry(
@@ -148,7 +148,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'hip thrust en maquina',
       'empuje de cadera',
     ],
-    'https://www.youtube.com/watch?v=7B4pSZhzkYY',
+    'https://www.youtube.com/watch?v=14wE63cK26I',
     'gluteo'
   ),
   entry(
@@ -171,7 +171,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'sentadilla bulgara con mancuernas',
       'split squat bulgaro',
     ],
-    'https://www.youtube.com/watch?v=2C-uNgKwPLE',
+    'https://www.youtube.com/watch?v=ulNCO1lgv_w',
     'gluteo'
   ),
   entry(
@@ -196,7 +196,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'rdl',
       'romanian deadlift',
     ],
-    'https://www.youtube.com/watch?v=jEy_czb3RKA',
+    'https://www.youtube.com/watch?v=BJgFG614Ljs',
     'gluteo'
   ),
   entry(
@@ -240,7 +240,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'femoral en maquina',
       'curl de pierna',
     ],
-    'https://www.youtube.com/watch?v=sRMO3SbTqjk',
+    'https://www.youtube.com/shorts/nmqG-tIr0hc',
     'pierna'
   ),
   entry(
@@ -276,7 +276,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'patada de gluteo maquina',
       'patada gluteo maquina',
     ],
-    'https://www.youtube.com/watch?v=RT5ZuVCy5Ac',
+    'https://www.youtube.com/shorts/7dAyon8VTz4',
     'gluteo'
   ),
   entry(
@@ -288,7 +288,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'abductora maquina',
       'abductores maquina',
     ],
-    'https://www.youtube.com/watch?v=GnDD9Cj7TYg',
+    'https://www.youtube.com/shorts/Vw32LcBYYrI',
     'gluteo'
   ),
   entry(
@@ -301,7 +301,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'abduccion de cadera en maquina',
       'abduccion en maquina',
     ],
-    'https://www.youtube.com/watch?v=2vCRMi-lgJ4',
+    'https://www.youtube.com/shorts/VWbA5zvYmi4',
     'gluteo'
   ),
   entry(
@@ -327,7 +327,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'press banca mancuernas',
       'press con mancuernas plano',
     ],
-    'https://www.youtube.com/watch?v=VmB1G1K7v94',
+    'https://www.youtube.com/shorts/9sxKdYp4ndE',
     'pecho'
   ),
   entry(
@@ -375,7 +375,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'elevaciones laterales con mancuernas',
       'lateral raises',
     ],
-    'https://www.youtube.com/watch?v=3VcKaXpzqRo',
+    'https://www.youtube.com/shorts/zEANAIh1l9g',
     'hombros'
   ),
   entry(
@@ -390,7 +390,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'deltoide posterior mancuerna',
       'reverse fly',
     ],
-    'https://www.youtube.com/watch?v=29AM-enz1tA',
+    'https://www.youtube.com/shorts/qv4mGZP0RGI',
     'hombros'
   ),
 
@@ -407,7 +407,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'remo polea baja',
       'seated row',
     ],
-    'https://www.youtube.com/watch?v=GZbfZ033f74',
+    'https://www.youtube.com/shorts/357EP7EhmPs',
     'espalda'
   ),
   entry(
@@ -431,7 +431,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'lat pulldown',
       'jalon polea agarre amplio',
     ],
-    'https://www.youtube.com/watch?v=CAwf7n6Luuc',
+    'https://www.youtube.com/shorts/bPAqG0B8_HQ',
     'espalda'
   ),
 
@@ -447,7 +447,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'curl de biceps con mancuernas',
       'curl mancuernas',
     ],
-    'https://www.youtube.com/watch?v=ykJmrZ5v0Oo',
+    'https://www.youtube.com/shorts/1oum3XH1ohs',
     'brazos'
   ),
   entry(
@@ -459,7 +459,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'extension de triceps tumbado',
       'french press',
     ],
-    'https://www.youtube.com/watch?v=HAyqcljtJuo',
+    'https://www.youtube.com/shorts/u8w3Us_FWb4',
     'brazos'
   ),
   entry(

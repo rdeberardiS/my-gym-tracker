@@ -149,6 +149,58 @@ export async function obtenerSeriesDeEjercicio(
   return series;
 }
 
+/**
+ * Récord de peso de un ejercicio: el peso máximo registrado en su historial.
+ * Permite excluir una sesión (típicamente la actual) para comparar contra el
+ * "mejor anterior" y detectar si en esta sesión se superó.
+ * Devuelve 0 si no hay historial.
+ */
+export async function obtenerRecordEjercicio(
+  ejercicioId: string,
+  excluirSesionId?: string
+): Promise<number> {
+  const series = await obtenerSeriesDeEjercicio(ejercicioId);
+  let max = 0;
+  for (const s of series) {
+    if (excluirSesionId && s.sesionId === excluirSesionId) continue;
+    if (s.peso > max) max = s.peso;
+  }
+  return max;
+}
+
+/** Un punto del historial: una sesión en la que se entrenó el ejercicio. */
+export interface PuntoHistorial {
+  sesionId: string;
+  fecha: number; // timestamp ms (más reciente de esa sesión)
+  pesoMax: number; // peso más alto de esa sesión
+  series: number; // cantidad de series registradas
+}
+
+/**
+ * Historial de pesos de un ejercicio, una entrada por sesión, de la más
+ * reciente a la más vieja. Base de la pantalla "Mis ejercicios".
+ */
+export async function obtenerHistorialEjercicio(
+  ejercicioId: string,
+  limite: number = 12
+): Promise<PuntoHistorial[]> {
+  const todas = await obtenerSeriesDeEjercicio(ejercicioId);
+  const porSesion = new Map<string, Serie[]>();
+  for (const s of todas) {
+    const arr = porSesion.get(s.sesionId) ?? [];
+    arr.push(s);
+    porSesion.set(s.sesionId, arr);
+  }
+  const puntos: PuntoHistorial[] = [];
+  porSesion.forEach((series, sesionId) => {
+    const pesoMax = series.reduce((m, s) => Math.max(m, s.peso), 0);
+    const fecha = series.reduce((m, s) => Math.max(m, s.fechaRegistro), 0);
+    puntos.push({ sesionId, fecha, pesoMax, series: series.length });
+  });
+  puntos.sort((a, b) => b.fecha - a.fecha);
+  return puntos.slice(0, limite);
+}
+
 // ============================================================
 // Queries derivadas: el "último peso" y "última vez"
 // ============================================================

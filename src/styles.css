@@ -5,17 +5,16 @@
 @layer base {
   html,
   body {
-    @apply bg-bg text-fg;
+    @apply bg-bg text-fg font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Evitar zoom en inputs en iOS */
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Inputs grandes para mobile */
+  /* Inputs grandes para mobile (evita zoom en iOS) */
   input,
   textarea,
   select {
-    font-size: 16px; /* evita zoom en iOS */
+    font-size: 16px;
   }
 }

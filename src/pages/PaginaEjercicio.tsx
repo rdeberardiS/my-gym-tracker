@@ -24,12 +24,15 @@ import { Header } from '@/components/Header';
 import { ModalCambiarVideo } from '@/components/ModalCambiarVideo';
 import { VideoTecnica } from '@/components/VideoTecnica';
 import { Intensidad } from '@/components/Intensidad';
+import { TimerDescanso } from '@/components/TimerDescanso';
+import { CartelRecord } from '@/components/CartelRecord';
 import { esEjercicioSinPeso, buscarVideoEnCatalogo } from '@/services/catalogo/catalogoVideos';
 import { db } from '@/db/schema';
 import {
   obtenerSeriesDeSesion,
   registrarSerie,
   calcularUltimaVez,
+  obtenerRecordEjercicio,
 } from '@/db/repositorios/sesionRepo';
 import {
   actualizarVideoEjercicio,
@@ -104,6 +107,22 @@ export function PaginaEjercicio() {
   const [comentario, setComentario] = useState('');
   const timerComentario = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Etapa 2: récord y timer de descanso
+  const [recordPrevio, setRecordPrevio] = useState<number>(0);
+  const [cartelRecordPeso, setCartelRecordPeso] = useState<number | null>(null);
+  const [mostrarTimer, setMostrarTimer] = useState(false);
+  const [timerNonce, setTimerNonce] = useState(0);
+
+  /** Tras registrar una serie: chequea récord y arranca el descanso. */
+  const trasRegistrar = (pesoUsado: number) => {
+    if (!sinPeso && pesoUsado > 0 && pesoUsado > recordPrevio) {
+      setRecordPrevio(pesoUsado);
+      setCartelRecordPeso(pesoUsado);
+    }
+    setMostrarTimer(true);
+    setTimerNonce((n) => n + 1);
+  };
+
   useEffect(() => {
     cargar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,6 +155,12 @@ export function PaginaEjercicio() {
       // ¿Es un ejercicio de core / peso corporal? Esos no llevan peso.
       const sinPesoEj = esEjercicioSinPeso(ej.nombre);
       setSinPeso(sinPesoEj);
+
+      // Récord previo (mejor peso histórico, sin contar esta sesión)
+      const record = sinPesoEj
+        ? 0
+        : await obtenerRecordEjercicio(ej.id, sesionId);
+      setRecordPrevio(record);
 
       // Calcular última vez
       const ultima = await calcularUltimaVez(ej.id, sinPesoEj);
@@ -258,6 +283,7 @@ export function PaginaEjercicio() {
           : sp
       )
     );
+    trasRegistrar(pesoGlobal);
   };
 
   const desmarcarSerie = async (idx: number) => {
@@ -318,6 +344,7 @@ export function PaginaEjercicio() {
           };
         })
       );
+      if (actualizaciones.length > 0) trasRegistrar(pesoGlobal);
     } finally {
       setGuardandoTodas(false);
     }
@@ -402,6 +429,12 @@ export function PaginaEjercicio() {
 
   return (
     <Pantalla>
+      {cartelRecordPeso !== null && (
+        <CartelRecord
+          peso={cartelRecordPeso}
+          onCerrar={() => setCartelRecordPeso(null)}
+        />
+      )}
       <Header titulo="Ejercicio" />
 
       <div className="px-4 pt-3 pb-32 flex-1">
@@ -410,12 +443,12 @@ export function PaginaEjercicio() {
           <>
             <button
               onClick={() => setMostrarVideo((v) => !v)}
-              className="w-full mb-3 px-4 py-3 bg-accent-muted border border-accent/40 rounded-lg flex items-center justify-center gap-2"
+              className="w-full mb-3 px-4 py-3 bg-accent-muted border border-fucsia/40 rounded-lg flex items-center justify-center gap-2"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="#c97b84">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff2486">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
-              <span className="text-accent text-sm font-medium">
+              <span className="text-fucsia text-sm font-medium">
                 {mostrarVideo ? 'Ocultar video' : 'Ver técnica'}
               </span>
             </button>
@@ -493,7 +526,7 @@ export function PaginaEjercicio() {
                 onFocus={(e) => e.target.select()}
                 onBlur={onTerminarEdicionPeso}
                 aria-label="Peso en kilos"
-                className="bg-transparent text-center text-4xl font-medium text-fg w-24 focus:outline-none focus:text-accent border-b border-transparent focus:border-accent"
+                className="bg-transparent text-center text-4xl font-medium text-fg w-24 focus:outline-none focus:text-fucsia border-b border-transparent focus:border-fucsia"
               />
               <span className="text-fg-muted text-sm">kg</span>
             </div>
@@ -514,6 +547,14 @@ export function PaginaEjercicio() {
               vas haciendo.
             </p>
           </div>
+        )}
+
+        {mostrarTimer && (
+          <TimerDescanso
+            key={timerNonce}
+            segundos={60}
+            onCerrar={() => setMostrarTimer(false)}
+          />
         )}
 
         {/* Botón grande: registrar todas de una */}
@@ -620,7 +661,7 @@ function BotonSerie({
       onClick={onTocar}
       className={`p-4 rounded-xl border text-left transition-colors select-none active:scale-[0.98] ${
         serie.marcada
-          ? 'bg-accent/15 border-accent text-fg'
+          ? 'bg-accent/15 border-fucsia text-fg'
           : 'bg-bg-elevated border-bg-subtle text-fg'
       }`}
     >
@@ -644,7 +685,7 @@ function BotonSerie({
             </>
           )}
         </div>
-        <span className={`text-lg leading-none ${serie.marcada ? 'text-accent' : 'text-fg-subtle'}`}>
+        <span className={`text-lg leading-none ${serie.marcada ? 'text-fucsia' : 'text-fg-subtle'}`}>
           {serie.marcada ? '✓' : '○'}
         </span>
       </div>

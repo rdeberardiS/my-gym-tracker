@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Pantalla } from '@/components/Pantalla';
+import { Confeti } from '@/components/Confeti';
 import { calcularEstadoSemanal } from '@/db/queries/objetivoSemanal';
 import { db } from '@/db/schema';
 import { RUTAS } from '@/rutas';
@@ -57,6 +58,7 @@ export function PaginaResumenEntreno() {
 
   return (
     <Pantalla>
+      {!noLlega && <Confeti cantidad={completado ? 150 : 70} />}
       <div className="flex-1 px-6 pt-14 pb-8 flex flex-col">
         {/* Ícono central */}
         <div className="text-center mb-6">
@@ -66,7 +68,7 @@ export function PaginaResumenEntreno() {
             }`}
           >
             {completado ? (
-              <svg width="42" height="42" viewBox="0 0 24 24" fill="#caa05a">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="#ff2486">
                 <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v3H5v-3z"/>
               </svg>
             ) : (
@@ -75,7 +77,7 @@ export function PaginaResumenEntreno() {
                 height="42"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#c97b84"
+                stroke="#161616"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -86,12 +88,12 @@ export function PaginaResumenEntreno() {
           </div>
         </div>
 
-        <h1 className="text-3xl font-medium tracking-tight text-center mb-2">
-          {completado ? '¡Felicitaciones!' : '¡Buen trabajo!'}
+        <h1 className="font-display text-3xl font-black uppercase tracking-tight text-center mb-2">
+          {completado ? '¡Semana completa!' : '¡Buen trabajo!'}
         </h1>
         <p className="text-fg-muted text-sm text-center mb-8">
           {completado
-            ? 'Completaste tu semana'
+            ? '¡La rompiste! Cumpliste tu objetivo 🔥'
             : `${duracionMin} min · Entrenamiento completado`}
         </p>
 
@@ -99,20 +101,20 @@ export function PaginaResumenEntreno() {
         <div
           className={`rounded-2xl p-5 mb-4 text-center border ${
             completado
-              ? 'bg-accent-muted border-accent'
+              ? 'bg-accent-muted border-fucsia'
               : 'bg-bg-elevated border-bg-subtle'
           }`}
         >
           <p
             className={`text-[11px] uppercase tracking-wider mb-3 ${
-              completado ? 'text-accent' : 'text-fg-subtle'
+              completado ? 'text-fucsia' : 'text-fg-subtle'
             }`}
           >
             Esta semana
           </p>
           <p className="text-4xl font-medium mb-3">
             {estado.entrenosCompletados}{' '}
-            <span className={completado ? 'text-accent text-xl' : 'text-fg-subtle text-xl'}>
+            <span className={completado ? 'text-fucsia text-xl' : 'text-fg-subtle text-xl'}>
               / {estado.objetivo}
             </span>
           </p>
@@ -139,7 +141,7 @@ export function PaginaResumenEntreno() {
             </p>
           )}
           {completado && (
-            <p className="text-accent text-xs mt-4">Objetivo cumplido 🔥</p>
+            <p className="text-fucsia text-xs mt-4">Objetivo cumplido 🔥</p>
           )}
         </div>
 
@@ -151,7 +153,7 @@ export function PaginaResumenEntreno() {
               height="22"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#cf6b63"
+              stroke="#e23b6d"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"

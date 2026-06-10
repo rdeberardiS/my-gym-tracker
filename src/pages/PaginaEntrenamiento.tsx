@@ -213,17 +213,17 @@ export function PaginaEntrenamiento() {
         {filasCore.length > 0 && (
           <button
             onClick={abrirBloqueCore}
-            className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border transition-colors ${
+            className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border border-l-[5px] border-l-accent transition-colors ${
               coreHecho
-                ? 'bg-accent/10 border-accent/40'
-                : 'bg-accent-muted border-accent/40 hover:border-accent'
+                ? 'bg-accent/10 border-fucsia/40'
+                : 'bg-accent-muted border-fucsia/40 hover:border-fucsia'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm font-medium ${
-                    coreHecho ? 'text-accent' : 'text-accent'
+                    coreHecho ? 'text-fucsia' : 'text-fucsia'
                   }`}
                 >
                   Abdominales
@@ -241,9 +241,9 @@ export function PaginaEntrenamiento() {
               </div>
               <div className="ml-3 text-fg-subtle">
                 {coreHecho ? (
-                  <span className="text-accent text-xl">✓</span>
+                  <span className="text-fucsia text-xl">✓</span>
                 ) : (
-                  <span className="text-accent">›</span>
+                  <span className="text-fucsia">›</span>
                 )}
               </div>
             </div>
@@ -256,15 +256,15 @@ export function PaginaEntrenamiento() {
             <button
               key={fila.enDia.id}
               onClick={() => abrirEjercicio(fila)}
-              className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border transition-colors ${
+              className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border border-l-[5px] border-l-accent transition-colors ${
                 hecho
-                  ? 'bg-accent/10 border-accent/40'
+                  ? 'bg-accent/10 border-fucsia/40'
                   : 'bg-bg-elevated border-bg-subtle hover:border-fg-subtle'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${hecho ? 'text-accent' : 'text-fg'}`}>
+                  <p className={`text-sm font-medium truncate ${hecho ? 'text-fucsia' : 'text-fg'}`}>
                     {fila.ejercicio.nombre}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
@@ -282,7 +282,7 @@ export function PaginaEntrenamiento() {
                 </div>
                 <div className="ml-3 text-fg-subtle">
                   {hecho ? (
-                    <span className="text-accent text-xl">✓</span>
+                    <span className="text-fucsia text-xl">✓</span>
                   ) : (
                     <span>›</span>
                   )}
@@ -300,9 +300,9 @@ export function PaginaEntrenamiento() {
         <button
           onClick={terminarEntreno}
           disabled={!algunoCompletado || terminando}
-          className={`w-full py-4 rounded-xl text-base font-medium ${
+          className={`w-full py-4 rounded-xl text-base font-black uppercase tracking-wide ${
             algunoCompletado
-              ? 'bg-accent text-accent-ink'
+              ? 'bg-fucsia text-fucsia-ink'
               : 'bg-bg-elevated text-fg-subtle border border-bg-subtle cursor-not-allowed'
           }`}
         >

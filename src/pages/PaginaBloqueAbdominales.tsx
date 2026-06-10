@@ -195,7 +195,7 @@ export function PaginaBloqueAbdominales() {
                   onClick={() => alternarSerie(ejIdx, serieIdx)}
                   className={`rounded-xl border py-3 text-center transition-colors select-none active:scale-[0.98] ${
                     s.marcada
-                      ? 'bg-accent/15 border-accent'
+                      ? 'bg-accent/15 border-fucsia'
                       : 'bg-bg-elevated border-bg-subtle'
                   }`}
                 >
@@ -204,7 +204,7 @@ export function PaginaBloqueAbdominales() {
                   </span>
                   <span
                     className={`text-lg leading-none ${
-                      s.marcada ? 'text-accent' : 'text-fg-subtle'
+                      s.marcada ? 'text-fucsia' : 'text-fg-subtle'
                     }`}
                   >
                     {s.marcada ? '✓' : '○'}

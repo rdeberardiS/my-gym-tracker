@@ -3,11 +3,7 @@
  *
  * Estados:
  *  - Sin rutina activa: pantalla de bienvenida con CTA "Pegar mi rutina"
- *  - Con rutina activa: muestra día sugerido + indicador semanal + alertas
- *
- * Alertas proactivas:
- *  - Amarilla: vas atrasada pero todavía podés llegar
- *  - Roja: ya no se puede llegar al objetivo esta semana
+ *  - Con rutina activa: anillo de progreso semanal + mensaje vivo + día sugerido + alertas
  */
 
 import { useEffect, useState } from 'react';
@@ -26,12 +22,64 @@ import {
 } from '@/db/queries/objetivoSemanal';
 import { listarSesionesValidasEnVentana } from '@/db/repositorios/sesionRepo';
 import { db } from '@/db/schema';
-import type {
-  Rutina,
-  DiaRutina,
-  EstadoSemanal,
-} from '@/types/dominio';
+import type { Rutina, DiaRutina, EstadoSemanal } from '@/types/dominio';
 import { RUTAS } from '@/rutas';
+
+/** Anillo de progreso semanal (reemplaza los puntitos ●●○). */
+function AnilloProgreso({
+  completados,
+  objetivo,
+}: {
+  completados: number;
+  objetivo: number;
+}) {
+  const r = 68;
+  const circ = 2 * Math.PI * r;
+  const frac = objetivo > 0 ? Math.min(completados / objetivo, 1) : 0;
+  const offset = circ * (1 - frac);
+  return (
+    <div className="relative w-[168px] h-[168px] mx-auto">
+      <svg
+        width="168"
+        height="168"
+        viewBox="0 0 168 168"
+        className="-rotate-90"
+      >
+        <circle cx="84" cy="84" r={r} fill="none" stroke="#2c2c2c" strokeWidth="15" />
+        <circle
+          cx="84"
+          cy="84"
+          r={r}
+          fill="none"
+          stroke="#c2f000"
+          strokeWidth="15"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 700ms ease' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-display font-black text-[46px] leading-none tracking-tight text-white">
+          {completados}/{objetivo}
+        </span>
+        <span className="text-[#9a9a9a] text-[10.5px] uppercase tracking-[0.12em] font-bold mt-1">
+          esta semana
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** Mensaje vivo según cómo viene la semana. */
+function mensajeSemanal(e: EstadoSemanal): string {
+  const faltan = e.objetivo - e.entrenosCompletados;
+  if (e.cumplido) return '¡Semana completa! 🔥';
+  if (!e.posibleCumplir) return 'Cerrá la semana con todo 💪';
+  if (e.entrenosCompletados === 0) return '¡Arrancá tu semana!';
+  if (faltan === 1) return '¡Una más y la rompés!';
+  return `¡Te faltan ${faltan} para tu objetivo!`;
+}
 
 export function PaginaHome() {
   const navigate = useNavigate();
@@ -50,7 +98,6 @@ export function PaginaHome() {
     cargar();
   }, []);
 
-  // Recargar al volver a esta pantalla
   useEffect(() => {
     const onFocus = () => cargar();
     window.addEventListener('focus', onFocus);
@@ -73,9 +120,6 @@ export function PaginaHome() {
         setTodosLosDias(dias);
         setEstadoSemanal(semanal);
 
-        // Días (por número de día) que ya entrené esta semana. Cruzamos por
-        // ORDEN y no por id, para que funcione aunque la rutina se haya
-        // reimportado (los días nuevos tienen ids distintos).
         const entrenados = new Set<number>();
         for (const s of sesionesSemana) {
           const d = await db.diasRutina.get(s.diaRutinaId);
@@ -110,7 +154,9 @@ export function PaginaHome() {
       <Pantalla>
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <div className="text-6xl mb-6">🏋️</div>
-          <h1 className="text-2xl font-medium tracking-tight mb-2">Empecemos</h1>
+          <h1 className="font-display text-3xl font-black tracking-tight mb-2">
+            EMPECEMOS
+          </h1>
           <p className="text-fg-muted text-sm mb-10 leading-relaxed">
             Pegá la rutina que te pasó tu coach.
             <br />
@@ -118,7 +164,7 @@ export function PaginaHome() {
           </p>
           <button
             onClick={() => navigate(RUTAS.importar)}
-            className="w-full max-w-sm bg-accent text-accent-ink py-4 rounded-xl text-base font-medium"
+            className="w-full max-w-sm bg-accent text-accent-ink py-4 rounded-2xl text-base font-black uppercase tracking-wide"
           >
             Pegar mi rutina
           </button>
@@ -129,31 +175,27 @@ export function PaginaHome() {
   }
 
   // Estado 2: Con rutina activa
-  const fecha = new Date().toLocaleDateString('es-AR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-  const fechaCapitalizada = fecha.charAt(0).toUpperCase() + fecha.slice(1);
-
   const alertaAmarilla =
     estadoSemanal &&
     !estadoSemanal.cumplido &&
     estadoSemanal.posibleCumplir &&
     estadoSemanal.entrenosCompletados < estadoSemanal.objetivo &&
-    estadoSemanal.diasRestantes <= estadoSemanal.objetivo - estadoSemanal.entrenosCompletados + 1;
+    estadoSemanal.diasRestantes <=
+      estadoSemanal.objetivo - estadoSemanal.entrenosCompletados + 1;
 
   const alertaRoja =
     estadoSemanal && !estadoSemanal.cumplido && !estadoSemanal.posibleCumplir;
 
   return (
     <Pantalla>
-      <div className="flex items-center justify-between px-5 pt-4 pb-2">
-        <div className="w-10" />
-        <span className="text-fg font-medium">Gym Tracker</span>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-3">
+        <span className="font-display font-black text-xl tracking-tight">
+          GYM TRACKER
+        </span>
         <button
           onClick={() => setMenuAbierto(true)}
-          className="text-fg-muted text-2xl w-10 text-right"
+          className="w-9 h-9 rounded-full bg-fucsia text-white flex items-center justify-center text-lg"
           aria-label="Menú"
         >
           ⋯
@@ -161,26 +203,29 @@ export function PaginaHome() {
       </div>
 
       <div className="px-5 pb-6 flex-1 overflow-y-auto">
+        {/* Anillo + mensaje vivo */}
+        {estadoSemanal && (
+          <div className="bg-fg rounded-3xl p-6 mb-4 text-center shadow-sm">
+            <AnilloProgreso
+              completados={estadoSemanal.entrenosCompletados}
+              objetivo={estadoSemanal.objetivo}
+            />
+            <p className="font-display font-extrabold text-fucsia text-base mt-3">
+              {mensajeSemanal(estadoSemanal)}
+            </p>
+          </div>
+        )}
+
         {/* Alerta roja */}
         {alertaRoja && (
-          <div className="bg-danger-muted border border-danger/40 rounded-xl p-3.5 mb-4 flex gap-3 items-start">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#cf6b63"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="flex-shrink-0 mt-0.5"
-            >
+          <div className="bg-danger-muted border border-danger/40 rounded-2xl p-3.5 mb-4 flex gap-3 items-start">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e23b6d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
               <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <div>
-              <p className="text-danger-ink text-sm font-medium mb-0.5">
+              <p className="text-danger-ink text-sm font-bold mb-0.5">
                 No vas a llegar esta semana
               </p>
               <p className="text-danger-ink/80 text-xs leading-relaxed">
@@ -193,25 +238,13 @@ export function PaginaHome() {
 
         {/* Alerta amarilla */}
         {alertaAmarilla && (
-          <div className="bg-warn-muted border border-warn/50 rounded-xl p-3.5 mb-4 flex gap-3 items-start">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#d8a24a"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="flex-shrink-0 mt-0.5"
-            >
+          <div className="bg-warn-muted border border-warn/50 rounded-2xl p-3.5 mb-4 flex gap-3 items-start">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e6a100" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
             <div>
-              <p className="text-warn-ink text-sm font-medium mb-0.5">
-                Apretá el paso
-              </p>
+              <p className="text-warn-ink text-sm font-bold mb-0.5">Apretá el paso</p>
               <p className="text-warn-ink/80 text-xs leading-relaxed">
                 Vas {estadoSemanal!.entrenosCompletados} de {estadoSemanal!.objetivo}.
                 Si entrenás{' '}
@@ -224,67 +257,45 @@ export function PaginaHome() {
           </div>
         )}
 
-        {/* Indicador semanal */}
-        {estadoSemanal && (
-          <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-4 mb-7">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-fg-muted text-sm">Esta semana</span>
-              <div className="flex gap-1.5">
-                {Array.from({ length: estadoSemanal.objetivo }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`w-3.5 h-3.5 rounded-full inline-block ${
-                      i < estadoSemanal.entrenosCompletados
-                        ? 'bg-accent'
-                        : 'border border-fg-subtle'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-            <p className="text-sm text-fg">
-              {estadoSemanal.entrenosCompletados} de {estadoSemanal.objetivo}{' '}
-              entrenos
+        {/* Tarjeta del día sugerido */}
+        <div className="bg-bg-elevated rounded-3xl p-5 shadow-sm">
+          {diaSugerido ? (
+            <>
+              <span className="inline-block bg-fucsia text-white text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg mb-2.5">
+                Día {diaSugerido.orden}
+              </span>
+              <h1 className="font-display text-2xl font-black tracking-tight leading-tight mb-2">
+                {diaSugerido.nombre}
+              </h1>
+              <div className="w-11 h-[5px] rounded bg-fucsia mb-4" />
+            </>
+          ) : (
+            <p className="text-fg-muted text-sm mb-4">
+              Tu rutina está cargada. Empezá cuando quieras.
             </p>
-          </div>
-        )}
+          )}
 
-        <p className="text-fg-subtle text-xs mb-1.5">{fechaCapitalizada}</p>
-        <p className="text-fg-muted text-sm mb-1">Te toca</p>
-        {diaSugerido ? (
-          <>
-            <h1 className="text-4xl font-medium tracking-tight leading-none mb-1.5">
-              Día {diaSugerido.orden}
-            </h1>
-            <h2 className="text-2xl font-normal tracking-tight leading-tight mb-3">
-              {diaSugerido.nombre}
-            </h2>
-          </>
-        ) : (
-          <p className="text-fg-muted text-sm mb-5">
-            Tu rutina está cargada. Empezá cuando quieras.
-          </p>
-        )}
-
-        <button
-          onClick={() => empezarEntrenamiento()}
-          className="w-full bg-accent text-accent-ink py-4 rounded-xl text-base font-medium mt-5 mb-2"
-        >
-          Empezar entrenamiento →
-        </button>
-
-        {todosLosDias.length > 1 && (
           <button
-            onClick={() => setSelectorDiaAbierto(true)}
-            className="w-full text-fg-muted py-2 text-xs"
+            onClick={() => empezarEntrenamiento()}
+            className="w-full bg-accent text-accent-ink py-4 rounded-2xl text-base font-black uppercase tracking-wide"
           >
-            Quiero hacer otro día
+            Empezar entrenamiento
           </button>
-        )}
 
+          {todosLosDias.length > 1 && (
+            <button
+              onClick={() => setSelectorDiaAbierto(true)}
+              className="w-full text-fg-muted py-2.5 text-xs font-semibold mt-1"
+            >
+              Quiero hacer otro día
+            </button>
+          )}
+        </div>
+
+        {/* Lista de días de la semana */}
         {todosLosDias.length > 0 && (
           <>
-            <p className="text-fg-subtle text-[11px] uppercase tracking-wider mt-7 mb-3">
+            <p className="text-fg-subtle text-[11px] uppercase tracking-wider font-bold mt-7 mb-3">
               Esta semana
             </p>
             {todosLosDias.map((d) => {
@@ -292,20 +303,16 @@ export function PaginaHome() {
               return (
                 <div
                   key={d.id}
-                  className={`rounded-lg px-3.5 py-3 mb-2 flex items-center justify-between border ${
-                    hecho
-                      ? 'bg-accent-muted border-accent/40'
-                      : 'bg-bg-elevated border-bg-subtle'
-                  }`}
+                  className={`rounded-2xl px-4 py-3.5 mb-2 flex items-center justify-between ${
+                    'bg-bg-elevated'
+                  } shadow-sm`}
                 >
-                  <p className={`text-sm ${hecho ? 'text-fg' : 'text-fg-muted'}`}>
+                  <p className={`text-sm font-semibold ${hecho ? 'text-fg' : 'text-fg-muted'}`}>
                     Día {d.orden}
-                    <span className="text-fg-muted"> · {d.nombre}</span>
+                    <span className="text-fg-muted font-normal"> · {d.nombre}</span>
                   </p>
                   {hecho ? (
-                    <span className="text-accent text-sm font-medium flex items-center gap-1">
-                      ✓ Hecho
-                    </span>
+                    <span className="text-fucsia text-sm font-extrabold flex items-center gap-1">✓</span>
                   ) : (
                     <span className="text-fg-subtle text-xs">Te falta</span>
                   )}
@@ -321,15 +328,15 @@ export function PaginaHome() {
       {/* Menú principal */}
       {menuAbierto && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-end z-50"
+          className="fixed inset-0 bg-black/50 flex items-end z-50"
           onClick={() => setMenuAbierto(false)}
         >
           <div
-            className="w-full bg-bg-elevated border-t border-bg-subtle rounded-t-2xl p-5"
+            className="w-full bg-bg-elevated rounded-t-3xl p-5"
             onClick={(e) => e.stopPropagation()}
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0) + 20px)' }}
           >
-            <p className="text-fg-subtle text-[11px] uppercase tracking-wider mb-3">
+            <p className="text-fg-subtle text-[11px] uppercase tracking-wider font-bold mb-3">
               Mi rutina
             </p>
             <button
@@ -337,13 +344,13 @@ export function PaginaHome() {
                 setMenuAbierto(false);
                 navigate(RUTAS.importar);
               }}
-              className="w-full text-left bg-bg border border-bg-subtle rounded-lg px-4 py-3 text-sm mb-2 flex items-center gap-2"
+              className="w-full text-left bg-bg rounded-2xl px-4 py-3.5 text-sm font-semibold mb-2 flex items-center gap-2"
             >
               📥 Importar nueva rutina
             </button>
             <button
               onClick={() => setMenuAbierto(false)}
-              className="w-full text-fg-muted py-3 text-sm mt-2"
+              className="w-full text-fg-muted py-3 text-sm font-semibold mt-2"
             >
               Cancelar
             </button>
@@ -354,15 +361,15 @@ export function PaginaHome() {
       {/* Selector "Quiero hacer otro día" */}
       {selectorDiaAbierto && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-end z-50"
+          className="fixed inset-0 bg-black/50 flex items-end z-50"
           onClick={() => setSelectorDiaAbierto(false)}
         >
           <div
-            className="w-full bg-bg-elevated border-t border-bg-subtle rounded-t-2xl p-5"
+            className="w-full bg-bg-elevated rounded-t-3xl p-5"
             onClick={(e) => e.stopPropagation()}
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0) + 20px)' }}
           >
-            <p className="text-fg-subtle text-[11px] uppercase tracking-wider mb-3">
+            <p className="text-fg-subtle text-[11px] uppercase tracking-wider font-bold mb-3">
               Elegí qué día querés entrenar
             </p>
             {todosLosDias.map((d) => (
@@ -372,21 +379,19 @@ export function PaginaHome() {
                   setSelectorDiaAbierto(false);
                   empezarEntrenamiento(d.id);
                 }}
-                className={`w-full text-left bg-bg border rounded-lg px-4 py-3 text-sm mb-2 ${
-                  d.id === diaSugerido?.id
-                    ? 'border-accent text-accent'
-                    : 'border-bg-subtle'
+                className={`w-full text-left bg-bg rounded-2xl px-4 py-3.5 text-sm font-semibold mb-2 ${
+                  d.id === diaSugerido?.id ? 'border-2 border-fucsia text-fucsia' : ''
                 }`}
               >
                 Día {d.orden} · {d.nombre}
                 {d.id === diaSugerido?.id && (
-                  <span className="text-[11px] text-accent ml-2">(sugerido)</span>
+                  <span className="text-[11px] text-fucsia ml-2">(sugerido)</span>
                 )}
               </button>
             ))}
             <button
               onClick={() => setSelectorDiaAbierto(false)}
-              className="w-full text-fg-muted py-3 text-sm mt-2"
+              className="w-full text-fg-muted py-3 text-sm font-semibold mt-2"
             >
               Cancelar
             </button>

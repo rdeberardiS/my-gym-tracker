@@ -9,5 +9,6 @@ export const RUTAS = {
   previewRutina: '/preview-rutina',
   entrenamiento: '/entrenamiento',
   progreso: '/progreso',
+  misEjercicios: '/mis-ejercicios',
   resumenEntreno: '/resumen-entreno',
 } as const;
