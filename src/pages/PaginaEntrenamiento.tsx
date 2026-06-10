@@ -24,6 +24,7 @@ import {
   obtenerRutinaActiva,
 } from '@/db/repositorios/rutinaRepo';
 import { RUTAS } from '@/rutas';
+import { esEjercicioSinPeso } from '@/services/catalogo/catalogoVideos';
 import type {
   DiaRutina,
   EjercicioEnDiaRutina,
@@ -146,6 +147,13 @@ export function PaginaEntrenamiento() {
     );
   };
 
+  const abrirBloqueCore = () => {
+    if (!sesion) return;
+    navigate(
+      `${RUTAS.entrenamiento}/${dia!.id}/abdominales?sesion=${sesion.id}`
+    );
+  };
+
   const terminarEntreno = async () => {
     if (!sesion || terminando) return;
     setTerminando(true);
@@ -170,8 +178,21 @@ export function PaginaEntrenamiento() {
 
   if (!dia) return null;
 
-  const ejerciciosCompletados = filas.filter((f) => f.seriesHechas > 0).length;
-  const algunoCompletado = ejerciciosCompletados > 0;
+  // Separar el bloque de core (abs) del resto. Los de core van juntos en
+  // una sola tarjeta "Abdominales".
+  const filasCore = filas.filter((f) => esEjercicioSinPeso(f.ejercicio.nombre));
+  const filasNormales = filas.filter(
+    (f) => !esEjercicioSinPeso(f.ejercicio.nombre)
+  );
+  const coreHecho = filasCore.some((f) => f.seriesHechas > 0);
+  const coreSeriesHechas = filasCore.reduce((acc, f) => acc + f.seriesHechas, 0);
+
+  // El bloque de core cuenta como UNA unidad para el contador del día.
+  const totalBloques = filasNormales.length + (filasCore.length > 0 ? 1 : 0);
+  const bloquesCompletados =
+    filasNormales.filter((f) => f.seriesHechas > 0).length +
+    (coreHecho ? 1 : 0);
+  const algunoCompletado = bloquesCompletados > 0;
 
   return (
     <Pantalla>
@@ -185,10 +206,51 @@ export function PaginaEntrenamiento() {
           {dia.nombre}
         </h1>
         <p className="text-fg-subtle text-xs mb-6">
-          {ejerciciosCompletados} de {filas.length} ejercicios completados
+          {bloquesCompletados} de {totalBloques}{' '}
+          {totalBloques === 1 ? 'bloque completado' : 'bloques completados'}
         </p>
 
-        {filas.map((fila) => {
+        {filasCore.length > 0 && (
+          <button
+            onClick={abrirBloqueCore}
+            className={`w-full text-left mb-2 px-4 py-3.5 rounded-xl border transition-colors ${
+              coreHecho
+                ? 'bg-accent/10 border-accent/40'
+                : 'bg-accent-muted border-accent/40 hover:border-accent'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <p
+                  className={`text-sm font-medium ${
+                    coreHecho ? 'text-accent' : 'text-accent'
+                  }`}
+                >
+                  Abdominales
+                </p>
+                <p className="text-xs text-fg-muted mt-0.5 truncate">
+                  {filasCore.map((f) => f.ejercicio.nombre).join(' · ')}
+                </p>
+                <p className="text-[11px] text-fg-subtle mt-0.5">
+                  {coreHecho
+                    ? `${coreSeriesHechas} ${
+                        coreSeriesHechas === 1 ? 'serie hecha' : 'series hechas'
+                      }`
+                    : `${filasCore.length} ejercicios · sin peso`}
+                </p>
+              </div>
+              <div className="ml-3 text-fg-subtle">
+                {coreHecho ? (
+                  <span className="text-accent text-xl">✓</span>
+                ) : (
+                  <span className="text-accent">›</span>
+                )}
+              </div>
+            </div>
+          </button>
+        )}
+
+        {filasNormales.map((fila) => {
           const hecho = fila.seriesHechas > 0;
           return (
             <button
