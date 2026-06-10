@@ -24,6 +24,7 @@ import { Header } from '@/components/Header';
 import { ModalCambiarVideo } from '@/components/ModalCambiarVideo';
 import { VideoTecnica } from '@/components/VideoTecnica';
 import { Intensidad } from '@/components/Intensidad';
+import { esEjercicioSinPeso, buscarVideoEnCatalogo } from '@/services/catalogo/catalogoVideos';
 import { db } from '@/db/schema';
 import {
   obtenerSeriesDeSesion,
@@ -94,6 +95,7 @@ export function PaginaEjercicio() {
   const [prescripcion, setPrescripcion] = useState<EjercicioEnDiaRutina | null>(null);
   const [ultimaVez, setUltimaVez] = useState<ResumenUltimaVez | null>(null);
   const [seriesEnPantalla, setSeriesEnPantalla] = useState<SerieEnPantalla[]>([]);
+  const [sinPeso, setSinPeso] = useState<boolean>(false);
   const [pesoGlobal, setPesoGlobal] = useState<number>(0);
   const [pesoTexto, setPesoTexto] = useState<string>('0');
   const [mostrarVideo, setMostrarVideo] = useState(false);
@@ -131,8 +133,12 @@ export function PaginaEjercicio() {
       }
       setEjercicio(ej);
 
+      // ¿Es un ejercicio de core / peso corporal? Esos no llevan peso.
+      const sinPesoEj = esEjercicioSinPeso(ej.nombre);
+      setSinPeso(sinPesoEj);
+
       // Calcular última vez
-      const ultima = await calcularUltimaVez(ej.id);
+      const ultima = await calcularUltimaVez(ej.id, sinPesoEj);
       setUltimaVez(ultima);
 
       // Cargar series ya registradas de esta sesión
@@ -141,9 +147,11 @@ export function PaginaEjercicio() {
         .filter((s) => s.ejercicioId === ej.id)
         .sort((a, b) => a.numeroSerie - b.numeroSerie);
 
-      // Peso inicial: si ya hay series registradas hoy, usar el de la primera.
-      // Si no, usar el de la última vez. Si nunca entrenó, default 10.
-      const pesoInicial = seriesEsteEjercicio[0]?.peso ?? ultima.pesoPreRellenado ?? 10;
+      // Peso inicial: en core siempre 0. Si no, si ya hay series hoy uso el
+      // de la primera; si no, el de la última vez; si nunca entrenó, 10.
+      const pesoInicial = sinPesoEj
+        ? 0
+        : seriesEsteEjercicio[0]?.peso ?? ultima.pesoPreRellenado ?? 10;
       setPesoGlobal(pesoInicial);
       setPesoTexto(fmtPeso(pesoInicial));
 
@@ -370,6 +378,16 @@ export function PaginaEjercicio() {
     [prescripcion, ejercicio]
   );
 
+  // Video a mostrar: el propio del ejercicio si lo tiene; si no, el del
+  // catálogo (match por nombre). Así los videos del catálogo aparecen aunque
+  // el ejercicio se haya importado antes, sin tener que reimportar la rutina.
+  const videoResuelto = useMemo(
+    () =>
+      ejercicio?.videoUrl ||
+      (ejercicio ? buscarVideoEnCatalogo(ejercicio.nombre) : null),
+    [ejercicio]
+  );
+
   if (cargando) {
     return (
       <Pantalla>
@@ -388,7 +406,7 @@ export function PaginaEjercicio() {
 
       <div className="px-4 pt-3 pb-32 flex-1">
         {/* Botón Video */}
-        {ejercicio.videoUrl && (
+        {videoResuelto && (
           <>
             <button
               onClick={() => setMostrarVideo((v) => !v)}
@@ -404,14 +422,14 @@ export function PaginaEjercicio() {
 
             {mostrarVideo && (
               <VideoTecnica
-                videoUrl={ejercicio.videoUrl}
+                videoUrl={videoResuelto}
                 nombreEjercicio={ejercicio.nombre}
               />
             )}
           </>
         )}
 
-        {!ejercicio.videoUrl && (
+        {!videoResuelto && (
           <button
             onClick={() => setModalVideoAbierto(true)}
             className="w-full mb-3 px-4 py-3 border border-dashed border-fg-subtle rounded-lg flex items-center justify-center gap-2 text-fg-muted hover:text-fg hover:border-fg-muted"
@@ -452,7 +470,9 @@ export function PaginaEjercicio() {
           </div>
         )}
 
-        {/* Peso global: editable directo + botones de ajuste fino */}
+        {/* Peso global: editable directo + botones de ajuste fino.
+            En ejercicios de core (sin peso) no se muestra. */}
+        {!sinPeso && (
         <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-4 mb-4">
           <p className="text-fg-muted text-xs mb-2">
             Peso para todas las series · tocá el número para escribirlo
@@ -485,6 +505,16 @@ export function PaginaEjercicio() {
             </button>
           </div>
         </div>
+        )}
+
+        {sinPeso && (
+          <div className="bg-bg-elevated border border-bg-subtle rounded-xl p-3.5 mb-4">
+            <p className="text-fg-muted text-xs leading-relaxed">
+              🧘 Ejercicio de core · sin peso. Marcá cada serie a medida que la
+              vas haciendo.
+            </p>
+          </div>
+        )}
 
         {/* Botón grande: registrar todas de una */}
         {!todasMarcadas && (
@@ -495,6 +525,8 @@ export function PaginaEjercicio() {
           >
             {guardandoTodas
               ? 'Registrando...'
+              : sinPeso
+              ? `✓ Registrar ${faltantes === 1 ? 'la serie' : `las ${faltantes} series`}`
               : `✓ Registrar ${faltantes === 1 ? 'la serie' : `las ${faltantes} series`} con ${fmtPeso(pesoGlobal)} kg`}
           </button>
         )}
@@ -508,7 +540,12 @@ export function PaginaEjercicio() {
         {/* Grilla de series */}
         <div className="grid grid-cols-2 gap-2.5 mb-6">
           {seriesEnPantalla.map((s, idx) => (
-            <BotonSerie key={idx} serie={s} onTocar={() => alternarSerie(idx)} />
+            <BotonSerie
+              key={idx}
+              serie={s}
+              sinPeso={sinPeso}
+              onTocar={() => alternarSerie(idx)}
+            />
           ))}
         </div>
 
@@ -556,7 +593,7 @@ export function PaginaEjercicio() {
 
       <ModalCambiarVideo
         abierto={modalVideoAbierto}
-        videoActual={ejercicio.videoUrl ?? null}
+        videoActual={videoResuelto ?? null}
         nombreEjercicio={ejercicio.nombre}
         onCerrar={() => setModalVideoAbierto(false)}
         onGuardar={cambiarVideo}
@@ -571,9 +608,11 @@ export function PaginaEjercicio() {
  */
 function BotonSerie({
   serie,
+  sinPeso,
   onTocar,
 }: {
   serie: SerieEnPantalla;
+  sinPeso: boolean;
   onTocar: () => void;
 }) {
   return (
@@ -590,11 +629,20 @@ function BotonSerie({
           <p className="text-fg-muted text-[11px] uppercase tracking-wider mb-1">
             Serie {serie.numero}
           </p>
-          <p className="text-xl font-medium leading-none">
-            {fmtPeso(serie.peso)}
-            <span className="text-sm text-fg-muted ml-0.5">kg</span>
-          </p>
-          <p className="text-xs text-fg-muted mt-1">× {serie.reps} reps</p>
+          {sinPeso ? (
+            <p className="text-xl font-medium leading-none">
+              {serie.reps}
+              <span className="text-sm text-fg-muted ml-0.5">reps</span>
+            </p>
+          ) : (
+            <>
+              <p className="text-xl font-medium leading-none">
+                {fmtPeso(serie.peso)}
+                <span className="text-sm text-fg-muted ml-0.5">kg</span>
+              </p>
+              <p className="text-xs text-fg-muted mt-1">× {serie.reps} reps</p>
+            </>
+          )}
         </div>
         <span className={`text-lg leading-none ${serie.marcada ? 'text-accent' : 'text-fg-subtle'}`}>
           {serie.marcada ? '✓' : '○'}

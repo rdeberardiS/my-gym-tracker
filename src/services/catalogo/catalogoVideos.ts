@@ -8,10 +8,15 @@
  *
  * El usuario puede sobreescribir cualquier video desde la app.
  *
- * Construido a partir de la rutina actual de la usuaria:
+ * Construido a partir de la rutina vigente de la usuaria + una base de
+ * ejercicios básicos de máquina para que casi todo matchee:
  *   Día 1: Glúteo pesado + Empuje
- *   Día 2: Cadera variada + Tirón
- *   Día 3: Glúteo accesorio + Zonas débiles
+ *   Día 2: Cadera + Tirón
+ *   Día 3: Glúteo accesorio
+ *
+ * Los videos son cortos y explicativos (en español). Si alguno no carga,
+ * no gusta o no corresponde, la usuaria lo cambia desde la pantalla del
+ * ejercicio (botón "cambiar video").
  */
 
 import { normalizar } from '@/services/normalizador/normalizador';
@@ -57,15 +62,78 @@ function entry(
 /**
  * Catálogo base.
  *
- * Los videos de placeholder apuntan a videos públicos conocidos de canales
- * reconocidos en español (Sergio Peinado, Powerexplosive, Mar Lázaro,
- * Fit Generation). La usuaria puede reemplazar cualquiera de estos desde
- * la app por el video que prefiera.
- *
- * Nota: estos IDs de YouTube son ilustrativos. Si al cargarse en la app no
- * existen o están restringidos, el usuario lo verá y los podrá cambiar.
+ * Los ejercicios de categoría 'core' (abdominales / zona media) NO llevan
+ * peso: se registran sólo marcando las series. Ver `esEjercicioSinPeso()`.
  */
 export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
+  // ============================================================
+  // CORE / ABDOMINALES (sin peso)
+  // ============================================================
+  entry(
+    'Crunch bicicleta',
+    [
+      'crunch bicicleta',
+      'abdominal bicicleta',
+      'abdominales bicicleta',
+      'bicicleta abdominal',
+      'bicycle crunch',
+    ],
+    'https://www.youtube.com/watch?v=NgEvyVYCfmY',
+    'core'
+  ),
+  entry(
+    'Toques de talón',
+    [
+      'toques talon',
+      'toque talon',
+      'toques de talon',
+      'toques talones',
+      'toque de talones',
+      'heel taps',
+      'heel touches',
+      'pinguinos',
+    ],
+    'https://www.youtube.com/watch?v=xwOd_aj6KMc',
+    'core'
+  ),
+  entry(
+    'Crunch invertido',
+    [
+      'crunch invertido',
+      'crunch inverso',
+      'crunch invertido abdominal',
+      'abdominal invertido',
+      'reverse crunch',
+      'elevacion piernas tumbada',
+    ],
+    'https://www.youtube.com/watch?v=009ABmp398k',
+    'core'
+  ),
+  entry(
+    'Plancha frontal',
+    ['plancha', 'plancha frontal', 'plancha abdominal', 'plank'],
+    'https://www.youtube.com/watch?v=ASdvN_XEl_c',
+    'core'
+  ),
+  entry(
+    'Dead bug',
+    ['dead bug', 'deadbug', 'bicho muerto'],
+    'https://www.youtube.com/watch?v=g_BYB0R-4Ws',
+    'core'
+  ),
+  entry(
+    'Bird dog',
+    ['bird dog', 'birddog', 'pajaro perro'],
+    'https://www.youtube.com/watch?v=wiFNA3sqjCA',
+    'core'
+  ),
+  entry(
+    'Mountain climbers',
+    ['mountain climbers', 'mountain climber', 'escaladores', 'escalador'],
+    'https://www.youtube.com/watch?v=mHg0OEUnLhw',
+    'core'
+  ),
+
   // ============================================================
   // GLÚTEO / CADERA
   // ============================================================
@@ -80,7 +148,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'hip thrust en maquina',
       'empuje de cadera',
     ],
-    'https://www.youtube.com/watch?v=xDmFkJxPzeM',
+    'https://www.youtube.com/watch?v=7B4pSZhzkYY',
     'gluteo'
   ),
   entry(
@@ -123,12 +191,57 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'peso muerto rumano',
       'peso muerto rumano mancuernas',
       'peso muerto rumano barra',
+      'peso muerto rumano con barra',
       'peso muerto rumano mancuernas o barra liviana',
       'rdl',
       'romanian deadlift',
     ],
     'https://www.youtube.com/watch?v=jEy_czb3RKA',
     'gluteo'
+  ),
+  entry(
+    'Prensa de piernas (pies altos para glúteo)',
+    [
+      'prensa',
+      'prensa de piernas',
+      'prensa piernas',
+      'prensa pies altos',
+      'prensa con pies altos',
+      'prensa pies altos foco gluteo',
+      'prensa inclinada',
+      'leg press',
+    ],
+    'https://www.youtube.com/watch?v=xR5GRg_E6kk',
+    'pierna'
+  ),
+  entry(
+    'Extensión de cuádriceps en máquina',
+    [
+      'extension cuadriceps',
+      'extension de cuadriceps',
+      'extension cuadriceps maquina',
+      'extension de cuadriceps en maquina',
+      'extension de rodilla',
+      'sillon de cuadriceps',
+      'leg extension',
+      'cuadriceps maquina',
+    ],
+    'https://www.youtube.com/watch?v=MyeQ1zCcfas',
+    'pierna'
+  ),
+  entry(
+    'Curl femoral en máquina',
+    [
+      'curl femoral',
+      'curl femoral en maquina',
+      'curl femoral tumbado',
+      'curl femoral acostado',
+      'curl femoral sentado',
+      'femoral en maquina',
+      'curl de pierna',
+    ],
+    'https://www.youtube.com/watch?v=sRMO3SbTqjk',
+    'pierna'
   ),
   entry(
     'Step up alto con mancuernas',
@@ -156,6 +269,17 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
     'gluteo'
   ),
   entry(
+    'Patada de glúteo en máquina',
+    [
+      'patada de gluteo en maquina',
+      'patada gluteo en maquina',
+      'patada de gluteo maquina',
+      'patada gluteo maquina',
+    ],
+    'https://www.youtube.com/watch?v=RT5ZuVCy5Ac',
+    'gluteo'
+  ),
+  entry(
     'Abducción de cadera sentada en máquina',
     [
       'abduccion cadera sentada',
@@ -165,6 +289,19 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'abductores maquina',
     ],
     'https://www.youtube.com/watch?v=GnDD9Cj7TYg',
+    'gluteo'
+  ),
+  entry(
+    'Abducción en máquina multicadera',
+    [
+      'abduccion en maquina multicadera',
+      'abduccion maquina multicadera',
+      'abduccion multicadera',
+      'multicadera',
+      'abduccion de cadera en maquina',
+      'abduccion en maquina',
+    ],
+    'https://www.youtube.com/watch?v=2vCRMi-lgJ4',
     'gluteo'
   ),
   entry(
@@ -191,6 +328,19 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'press con mancuernas plano',
     ],
     'https://www.youtube.com/watch?v=VmB1G1K7v94',
+    'pecho'
+  ),
+  entry(
+    'Press de pecho en máquina',
+    [
+      'press pecho maquina',
+      'press de pecho en maquina',
+      'press de pecho maquina',
+      'chest press',
+      'press pectoral maquina',
+      'press plano maquina',
+    ],
+    'https://www.youtube.com/watch?v=d-gwsl5BlMQ',
     'pecho'
   ),
   entry(
@@ -228,6 +378,21 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
     'https://www.youtube.com/watch?v=3VcKaXpzqRo',
     'hombros'
   ),
+  entry(
+    'Vuelos posteriores con mancuerna',
+    [
+      'vuelos posteriores',
+      'vuelos posteriores con mancuerna',
+      'vuelos posteriores con mancuernas',
+      'vuelo posterior',
+      'pajaros',
+      'pajaros con mancuernas',
+      'deltoide posterior mancuerna',
+      'reverse fly',
+    ],
+    'https://www.youtube.com/watch?v=29AM-enz1tA',
+    'hombros'
+  ),
 
   // ============================================================
   // TIRÓN / ESPALDA
@@ -243,6 +408,18 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'seated row',
     ],
     'https://www.youtube.com/watch?v=GZbfZ033f74',
+    'espalda'
+  ),
+  entry(
+    'Remo en máquina',
+    [
+      'remo maquina',
+      'remo en maquina',
+      'remo horizontal maquina',
+      'remo de espalda en maquina',
+      'machine row',
+    ],
+    'https://www.youtube.com/watch?v=VWyhefUKTp4',
     'espalda'
   ),
   entry(
@@ -267,9 +444,22 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'curl biceps',
       'curl biceps mancuernas',
       'curl biceps con mancuernas',
+      'curl de biceps con mancuernas',
       'curl mancuernas',
     ],
     'https://www.youtube.com/watch?v=ykJmrZ5v0Oo',
+    'brazos'
+  ),
+  entry(
+    'Press francés con mancuernas',
+    [
+      'press frances con mancuernas',
+      'press frances mancuernas',
+      'press frances',
+      'extension de triceps tumbado',
+      'french press',
+    ],
+    'https://www.youtube.com/watch?v=HAyqcljtJuo',
     'brazos'
   ),
   entry(
@@ -284,156 +474,98 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
     'https://www.youtube.com/watch?v=2-LAMcpzODU',
     'brazos'
   ),
-
-  // ============================================================
-  // CORE / PREVENCIÓN
-  // ============================================================
-  entry(
-    'Plancha frontal',
-    [
-      'plancha',
-      'plancha frontal',
-      'plancha abdominal',
-      'plank',
-    ],
-    'https://www.youtube.com/watch?v=ASdvN_XEl_c',
-    'core'
-  ),
-  entry(
-    'Dead bug',
-    [
-      'dead bug',
-      'deadbug',
-      'bicho muerto',
-    ],
-    'https://www.youtube.com/watch?v=g_BYB0R-4Ws',
-    'core'
-  ),
-  entry(
-    'Bird dog',
-    [
-      'bird dog',
-      'birddog',
-      'pajaro perro',
-    ],
-    'https://www.youtube.com/watch?v=wiFNA3sqjCA',
-    'core'
-  ),
-
-  // ============================================================
-  // AGREGADOS (videos de técnica, reemplazables desde la app)
-  // ============================================================
-  entry(
-    'Mountain climbers',
-    [
-      'mountain climbers',
-      'mountain climber',
-      'escaladores',
-      'escalador',
-    ],
-    'https://www.youtube.com/watch?v=mHg0OEUnLhw',
-    'core'
-  ),
-  entry(
-    'Crunch bicicleta',
-    [
-      'crunch bicicleta',
-      'abdominal bicicleta',
-      'abdominales bicicleta',
-      'bicicleta abdominal',
-      'bicycle crunch',
-    ],
-    'https://www.youtube.com/watch?v=NgEvyVYCfmY',
-    'core'
-  ),
-  entry(
-    'Curl femoral en máquina',
-    [
-      'curl femoral',
-      'curl femoral en maquina',
-      'curl femoral tumbado',
-      'curl femoral acostado',
-      'curl femoral sentado',
-      'femoral en maquina',
-      'curl de pierna',
-    ],
-    'https://www.youtube.com/watch?v=sRMO3SbTqjk',
-    'pierna'
-  ),
-  entry(
-    'Patada de glúteo en máquina',
-    [
-      'patada de gluteo en maquina',
-      'patada gluteo en maquina',
-      'patada de gluteo maquina',
-      'patada gluteo maquina',
-    ],
-    'https://www.youtube.com/watch?v=RT5ZuVCy5Ac',
-    'gluteo'
-  ),
-  entry(
-    'Abducción en máquina multicadera',
-    [
-      'abduccion en maquina multicadera',
-      'abduccion maquina multicadera',
-      'abduccion multicadera',
-      'multicadera',
-      'abduccion de cadera en maquina',
-      'abduccion en maquina',
-    ],
-    'https://www.youtube.com/watch?v=2vCRMi-lgJ4',
-    'gluteo'
-  ),
-  entry(
-    'Press francés con mancuernas',
-    [
-      'press frances con mancuernas',
-      'press frances mancuernas',
-      'press frances',
-      'extension de triceps tumbado',
-      'french press',
-    ],
-    'https://www.youtube.com/watch?v=HAyqcljtJuo',
-    'brazos'
-  ),
 ];
 
 /**
- * Busca en el catálogo un ejercicio que matchee con el nombre dado.
- * Devuelve el video del catálogo si encuentra match, null si no.
- *
- * El matching es por nombre normalizado contra las variantes.
+ * Conjunto de categorías cuyos ejercicios NO se registran con peso.
  */
-export function buscarVideoEnCatalogo(nombreEjercicio: string): string | null {
+const CATEGORIAS_SIN_PESO = new Set<CatalogoEjercicio['categoria']>(['core']);
+
+/**
+ * Palabras (ya normalizadas) que delatan un ejercicio de peso corporal /
+ * core aunque no esté en el catálogo. Es una red de seguridad para que
+ * ejercicios nuevos de abdominales tampoco pidan peso.
+ */
+const VARIANTES_SIN_PESO_EXTRA = [
+  'crunch',
+  'abdominal',
+  'abdominales',
+  'toques talon',
+  'toque talon',
+  'plancha',
+  'plank',
+  'dead bug',
+  'bicho muerto',
+  'bird dog',
+  'pajaro perro',
+  'mountain climbers',
+  'escaladores',
+  'elevacion de piernas',
+  'elevaciones de piernas',
+  'russian twist',
+  'tijeras',
+].map(normalizar);
+
+/**
+ * Busca en el catálogo la ENTRADA completa que matchea con el nombre dado.
+ * Match exacto por variante normalizada; si no, match parcial eligiendo la
+ * variante más larga (más específica). Devuelve null si no hay match.
+ */
+export function buscarEnCatalogo(
+  nombreEjercicio: string
+): CatalogoEjercicio | null {
   const normalizado = normalizar(nombreEjercicio);
   if (!normalizado) return null;
 
   for (const item of CATALOGO_EJERCICIOS) {
     if (item.variantesNormalizadas.includes(normalizado)) {
-      return item.videoUrl;
+      return item;
     }
   }
 
-  // Si no hay match exacto, intentamos match parcial: que el nombre
-  // normalizado del ejercicio CONTENGA alguna variante del catálogo.
-  // Esto cubre casos como "Hip thrust con banda elástica gris" -> "hip thrust con banda".
-  // Se busca el match más largo (más específico) primero.
+  // Match parcial: el nombre normalizado CONTIENE alguna variante del
+  // catálogo. Cubre casos como "Hip thrust con banda gris fina".
+  // Se elige el match más largo (más específico).
   let mejorMatch: CatalogoEjercicio | null = null;
   let largoMejorMatch = 0;
 
   for (const item of CATALOGO_EJERCICIOS) {
     for (const variante of item.variantesNormalizadas) {
-      if (
-        normalizado.includes(variante) &&
-        variante.length > largoMejorMatch
-      ) {
+      if (normalizado.includes(variante) && variante.length > largoMejorMatch) {
         mejorMatch = item;
         largoMejorMatch = variante.length;
       }
     }
   }
 
-  return mejorMatch?.videoUrl ?? null;
+  return mejorMatch;
+}
+
+/**
+ * Busca en el catálogo un video que matchee con el nombre dado.
+ * Devuelve el video del catálogo si encuentra match, null si no.
+ */
+export function buscarVideoEnCatalogo(nombreEjercicio: string): string | null {
+  return buscarEnCatalogo(nombreEjercicio)?.videoUrl ?? null;
+}
+
+/**
+ * Indica si un ejercicio se registra SIN peso (core / abdominales / peso
+ * corporal). Para estos ejercicios la pantalla de entrenamiento no muestra
+ * el peso ni los botones de ±2.5: sólo se marcan las series hechas.
+ *
+ * Decide por categoría del catálogo ('core') y, como red de seguridad, por
+ * palabras típicas de abdominales aunque el ejercicio no esté en el catálogo.
+ */
+export function esEjercicioSinPeso(nombreEjercicio: string): boolean {
+  const item = buscarEnCatalogo(nombreEjercicio);
+  if (item && CATEGORIAS_SIN_PESO.has(item.categoria)) return true;
+
+  const normalizado = normalizar(nombreEjercicio);
+  if (!normalizado) return false;
+  return VARIANTES_SIN_PESO_EXTRA.some(
+    (v) => normalizado === v || normalizado.includes(v)
+  );
 }
 
 /**

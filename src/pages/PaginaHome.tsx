@@ -19,22 +19,18 @@ import {
   obtenerDiasDeRutina,
 } from '@/db/repositorios/rutinaRepo';
 import { obtenerDiaSugerido } from '@/db/queries/diaSugerido';
-import { calcularEstadoSemanal } from '@/db/queries/objetivoSemanal';
-import { listarUltimasSesiones } from '@/db/repositorios/sesionRepo';
-import { db } from '@/db/schema';
+import {
+  calcularEstadoSemanal,
+  inicioSemana,
+  finSemana,
+} from '@/db/queries/objetivoSemanal';
+import { listarSesionesValidasEnVentana } from '@/db/repositorios/sesionRepo';
 import type {
   Rutina,
   DiaRutina,
   EstadoSemanal,
-  Sesion,
 } from '@/types/dominio';
 import { RUTAS } from '@/rutas';
-
-interface SesionConDia {
-  sesion: Sesion;
-  diaNombre: string;
-  diaOrden: number;
-}
 
 export function PaginaHome() {
   const navigate = useNavigate();
@@ -43,7 +39,9 @@ export function PaginaHome() {
   const [diaSugerido, setDiaSugerido] = useState<DiaRutina | null>(null);
   const [todosLosDias, setTodosLosDias] = useState<DiaRutina[]>([]);
   const [estadoSemanal, setEstadoSemanal] = useState<EstadoSemanal | null>(null);
-  const [ultimasSesiones, setUltimasSesiones] = useState<SesionConDia[]>([]);
+  const [diasEntrenadosSemana, setDiasEntrenadosSemana] = useState<Set<string>>(
+    new Set()
+  );
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [selectorDiaAbierto, setSelectorDiaAbierto] = useState(false);
 
@@ -64,27 +62,22 @@ export function PaginaHome() {
       const r = await obtenerRutinaActiva();
       setRutina(r);
       if (r) {
-        const [dia, dias, semanal, sesiones] = await Promise.all([
+        const [dia, dias, semanal, sesionesSemana] = await Promise.all([
           obtenerDiaSugerido(),
           obtenerDiasDeRutina(r.id),
           calcularEstadoSemanal(),
-          listarUltimasSesiones(3),
+          listarSesionesValidasEnVentana(inicioSemana(), finSemana()),
         ]);
         setDiaSugerido(dia);
         setTodosLosDias(dias);
         setEstadoSemanal(semanal);
 
-        // Enriquecer las últimas sesiones con info del día
-        const conDia: SesionConDia[] = [];
-        for (const s of sesiones) {
-          const d = await db.diasRutina.get(s.diaRutinaId);
-          if (d) {
-            conDia.push({ sesion: s, diaNombre: d.nombre, diaOrden: d.orden });
-          } else {
-            conDia.push({ sesion: s, diaNombre: '', diaOrden: 0 });
-          }
+        // Días (de la rutina) que ya entrené esta semana
+        const entrenados = new Set<string>();
+        for (const s of sesionesSemana) {
+          entrenados.add(s.diaRutinaId);
         }
-        setUltimasSesiones(conDia);
+        setDiasEntrenadosSemana(entrenados);
       }
     } finally {
       setCargando(false);
@@ -285,28 +278,36 @@ export function PaginaHome() {
           </button>
         )}
 
-        {ultimasSesiones.length > 0 && (
+        {todosLosDias.length > 0 && (
           <>
             <p className="text-fg-subtle text-[11px] uppercase tracking-wider mt-7 mb-3">
-              Últimos entrenos
+              Esta semana
             </p>
-            {ultimasSesiones.map((u) => (
-              <div
-                key={u.sesion.id}
-                className="bg-bg-elevated border border-bg-subtle rounded-lg px-3.5 py-3 mb-2 flex items-center justify-between"
-              >
-                <div>
-                  <p className="text-fg text-sm mb-0.5">
-                    {new Date(u.sesion.fechaFin ?? u.sesion.fechaInicio).toLocaleDateString(
-                      'es-AR',
-                      { weekday: 'short', day: 'numeric', month: 'short' }
-                    )}
-                    {u.diaNombre && <span className="text-fg-muted"> · Día {u.diaOrden} {u.diaNombre}</span>}
+            {todosLosDias.map((d) => {
+              const hecho = diasEntrenadosSemana.has(d.id);
+              return (
+                <div
+                  key={d.id}
+                  className={`rounded-lg px-3.5 py-3 mb-2 flex items-center justify-between border ${
+                    hecho
+                      ? 'bg-accent-muted border-accent/40'
+                      : 'bg-bg-elevated border-bg-subtle'
+                  }`}
+                >
+                  <p className={`text-sm ${hecho ? 'text-fg' : 'text-fg-muted'}`}>
+                    Día {d.orden}
+                    <span className="text-fg-muted"> · {d.nombre}</span>
                   </p>
+                  {hecho ? (
+                    <span className="text-accent text-sm font-medium flex items-center gap-1">
+                      ✓ Hecho
+                    </span>
+                  ) : (
+                    <span className="text-fg-subtle text-xs">Te falta</span>
+                  )}
                 </div>
-                <span className="text-accent">✓</span>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
       </div>

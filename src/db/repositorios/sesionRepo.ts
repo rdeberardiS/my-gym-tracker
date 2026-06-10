@@ -66,6 +66,31 @@ export async function listarUltimasSesiones(limite: number = 10): Promise<Sesion
   return sesiones.slice(0, limite);
 }
 
+/**
+ * Lista las sesiones VÁLIDAS (completadas + con al menos 1 serie) cuyo
+ * fechaFin cae dentro de la ventana [inicio, fin]. Usado para el checklist
+ * semanal del home.
+ */
+export async function listarSesionesValidasEnVentana(
+  inicio: number,
+  fin: number
+): Promise<Sesion[]> {
+  const sesiones = await db.sesiones
+    .where('fechaFin')
+    .between(inicio, fin, true, true)
+    .toArray();
+
+  const completadas = sesiones.filter((s) => s.completada === true);
+
+  const validas: Sesion[] = [];
+  for (const s of completadas) {
+    const tieneSerie =
+      (await db.series.where('sesionId').equals(s.id).count()) > 0;
+    if (tieneSerie) validas.push(s);
+  }
+  return validas;
+}
+
 // ============================================================
 // Serie
 // ============================================================
@@ -141,7 +166,8 @@ export async function obtenerSeriesDeEjercicio(
  * Cruza todas las rutinas: el último peso es global al ejercicio.
  */
 export async function calcularUltimaVez(
-  ejercicioId: string
+  ejercicioId: string,
+  sinPeso: boolean = false
 ): Promise<ResumenUltimaVez> {
   const todasLasSeries = await obtenerSeriesDeEjercicio(ejercicioId);
 
@@ -161,11 +187,15 @@ export async function calcularUltimaVez(
     .filter((s) => s.sesionId === ultimaSesionId)
     .sort((a, b) => a.numeroSerie - b.numeroSerie);
 
-  // Calcular peso pre-rellenado: la MODA (peso más frecuente)
-  const pesoPreRellenado = calcularPesoModa(seriesUltimaSesion.map((s) => s.peso));
+  // Para ejercicios sin peso (core), no hay peso pre-rellenado y la
+  // referencia muestra sólo las repeticiones.
+  const pesoPreRellenado = sinPeso
+    ? null
+    : calcularPesoModa(seriesUltimaSesion.map((s) => s.peso));
 
-  // Construir texto de referencia
-  const textoReferencia = construirTextoReferencia(seriesUltimaSesion);
+  const textoReferencia = sinPeso
+    ? construirTextoReps(seriesUltimaSesion)
+    : construirTextoReferencia(seriesUltimaSesion);
 
   // Calcular "hace X días"
   const fechaUltimaVez = todasLasSeries[0].fechaRegistro;
@@ -177,6 +207,15 @@ export async function calcularUltimaVez(
     hace,
     fechaUltimaVez,
   };
+}
+
+/**
+ * Texto de referencia para ejercicios sin peso (core): sólo las reps.
+ * Ej: "20, 20, 20 reps"
+ */
+function construirTextoReps(series: Serie[]): string {
+  if (series.length === 0) return '';
+  return `${series.map((s) => s.reps).join(', ')} reps`;
 }
 
 /**

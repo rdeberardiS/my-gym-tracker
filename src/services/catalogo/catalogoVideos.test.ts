@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buscarVideoEnCatalogo,
+  esEjercicioSinPeso,
   extraerIdYoutube,
   urlEmbed,
 } from './catalogoVideos';
@@ -63,6 +64,60 @@ describe('buscarVideoEnCatalogo', () => {
       const video = buscarVideoEnCatalogo(ej);
       expect(video, `Falta video para: ${ej}`).toBeTruthy();
     }
+  });
+});
+
+describe('rutina vigente: todos los ejercicios tienen video', () => {
+  const rutinaVigente = [
+    'Crunch bicicleta',
+    'Toques de talón',
+    'Crunch invertido',
+    'Hip thrust con barra',
+    'Búlgara con mancuernas',
+    'Press plano con mancuernas',
+    'Elevaciones laterales con mancuernas',
+    'Abducción de cadera sentada en máquina',
+    'Peso muerto rumano con barra',
+    'Curl femoral en máquina',
+    'Prensa con pies altos (foco glúteo)',
+    'Remo sentado en polea',
+    'Jalón al pecho',
+    'Patada de glúteo en máquina',
+    'Abducción en máquina multicadera',
+    'Vuelos posteriores con mancuerna',
+    'Curl de bíceps con mancuernas',
+    'Press francés con mancuernas',
+  ];
+
+  for (const ej of rutinaVigente) {
+    it(`tiene video: ${ej}`, () => {
+      expect(buscarVideoEnCatalogo(ej), `Falta video para: ${ej}`).toBeTruthy();
+    });
+  }
+});
+
+describe('básicos de máquina agregados', () => {
+  it('tiene video para los básicos de máquina', () => {
+    expect(buscarVideoEnCatalogo('Prensa de piernas')).toBeTruthy();
+    expect(buscarVideoEnCatalogo('Extensión de cuádriceps')).toBeTruthy();
+    expect(buscarVideoEnCatalogo('Press de pecho en máquina')).toBeTruthy();
+    expect(buscarVideoEnCatalogo('Remo en máquina')).toBeTruthy();
+  });
+});
+
+describe('esEjercicioSinPeso', () => {
+  it('marca como SIN peso los abdominales / core', () => {
+    expect(esEjercicioSinPeso('Crunch bicicleta')).toBe(true);
+    expect(esEjercicioSinPeso('Toques de talón')).toBe(true);
+    expect(esEjercicioSinPeso('Crunch invertido')).toBe(true);
+    expect(esEjercicioSinPeso('Plancha frontal')).toBe(true);
+  });
+
+  it('marca como CON peso los ejercicios de carga', () => {
+    expect(esEjercicioSinPeso('Hip thrust con barra')).toBe(false);
+    expect(esEjercicioSinPeso('Press plano con mancuernas')).toBe(false);
+    expect(esEjercicioSinPeso('Curl femoral en máquina')).toBe(false);
+    expect(esEjercicioSinPeso('Sentadilla goblet')).toBe(false);
   });
 });
 
