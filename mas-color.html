@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gym Tracker — Más color</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lime:#c6ff2e;--fucsia:#ff2d8b;--cyan:#2ee6e6;--violeta:#b388ff;
+    --txt:#f4f7ee;--muted:#9aa08c;--surf:rgba(255,255,255,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#07080a;font-family:"Outfit",-apple-system,sans-serif;color:var(--txt);
+    padding:26px 16px 60px;display:flex;flex-direction:column;align-items:center;gap:32px;}
+  .intro{max-width:400px;text-align:center;}
+  .intro h2{font-family:"Baloo 2";font-size:22px;margin-bottom:6px;}
+  .intro p{font-size:14px;color:#a7ab9c;line-height:1.45;}
+  .card{width:100%;max-width:360px;}
+  .name{font-family:"Baloo 2";font-weight:800;font-size:16px;margin:0 4px 10px;color:var(--lime);}
+
+  .phone{
+    background:
+      radial-gradient(75% 45% at 12% 0%, rgba(198,255,46,.16), transparent 60%),
+      radial-gradient(75% 45% at 92% 6%, rgba(255,45,139,.20), transparent 60%),
+      radial-gradient(90% 55% at 50% 102%, rgba(46,230,230,.16), transparent 60%),
+      #0b0c09;
+    border-radius:32px;padding:22px 20px 26px;overflow:hidden;position:relative;
+    box-shadow:0 16px 44px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.07);
+  }
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .hello{font-family:"Baloo 2";font-weight:700;font-size:18px;}
+  .menu{opacity:.65;font-size:20px;}
+
+  .ringwrap{position:relative;width:160px;height:160px;margin:4px auto 12px;}
+  .ringwrap svg{transform:rotate(-90deg);}
+  .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .rc .big{font-family:"Baloo 2";font-weight:800;font-size:42px;line-height:1;
+    background:linear-gradient(90deg,#c6ff2e,#2ee6e6);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .rc .sm{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.08em;text-transform:uppercase;}
+  .msg{text-align:center;font-family:"Baloo 2";font-weight:700;font-size:16px;margin-bottom:18px;color:var(--fucsia);}
+
+  .daycard{position:relative;border-radius:20px;padding:16px 18px;margin-bottom:14px;
+    background:linear-gradient(135deg,rgba(255,45,139,.14),rgba(46,230,230,.08));
+    border:1px solid rgba(255,255,255,.1);}
+  .chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;background:rgba(255,45,139,.2);color:var(--fucsia);margin-bottom:7px;}
+  .day{font-family:"Baloo 2";font-weight:700;font-size:18px;margin-bottom:14px;}
+  .btn{display:block;width:100%;border:none;font-family:"Baloo 2";font-weight:800;font-size:16px;padding:15px;border-radius:15px;letter-spacing:.02em;}
+  .btn-lime{background:linear-gradient(90deg,#c6ff2e,#8be62e);color:#16190d;box-shadow:0 8px 22px rgba(198,255,46,.3);}
+  .btn-fucsia{background:linear-gradient(90deg,#ff2d8b,#ff5fa8);color:#fff;box-shadow:0 8px 22px rgba(255,45,139,.42);}
+
+  .sect{font-family:"Baloo 2";font-weight:700;font-size:14px;margin:4px 2px 9px;color:var(--muted);}
+
+  /* exercise list with category color */
+  .ex{display:flex;align-items:center;gap:0;border-radius:15px;margin-bottom:9px;overflow:hidden;background:var(--surf);}
+  .ex .barcol{width:6px;align-self:stretch;}
+  .ex .body{display:flex;align-items:center;gap:11px;padding:12px 14px;flex:1;}
+  .ex .dot{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .ex .nm{font-weight:600;font-size:14px;}
+  .ex .cat{font-size:11px;}
+  .c-glu{--c:#ff2d8b;} .c-abs{--c:#2ee6e6;} .c-pie{--c:#c6ff2e;} .c-sup{--c:#b388ff;}
+  .ex .barcol{background:var(--c);} 
+  .ex .dot{background:color-mix(in srgb,var(--c) 22%,transparent);} 
+  .ex .cat{color:var(--c);}
+
+  .prog{height:7px;border-radius:5px;background:rgba(255,255,255,.1);margin-bottom:6px;overflow:hidden;}
+  .prog>span{display:block;height:100%;width:37%;background:linear-gradient(90deg,#c6ff2e,#2ee6e6);border-radius:5px;}
+  .progtxt{font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .hd{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .hd .bk{font-size:20px;opacity:.7;}
+  .hd .ti{font-family:"Baloo 2";font-weight:700;font-size:18px;}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h2>Más color, con orden 🌈</h2>
+    <p>Sumé fucsia y cyan, destellos de color en el fondo, y un color por grupo muscular en la lista. ¿Mejor así?</p>
+  </div>
+
+  <!-- HOME -->
+  <div class="card">
+    <div class="name">Inicio</div>
+    <div class="phone">
+      <div class="top"><div class="hello">Hola, Rocío ⚡</div><div class="menu">⋯</div></div>
+      <div class="ringwrap">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <defs><linearGradient id="multi" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#c6ff2e"/><stop offset=".5" stop-color="#ff2d8b"/><stop offset="1" stop-color="#2ee6e6"/></linearGradient></defs>
+          <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="15"/>
+          <circle cx="80" cy="80" r="65" fill="none" stroke="url(#multi)" stroke-width="15" stroke-linecap="round"
+                  stroke-dasharray="408" stroke-dashoffset="136"/>
+        </svg>
+        <div class="rc"><div class="big">2/3</div><div class="sm">esta semana</div></div>
+      </div>
+      <div class="msg">¡Una más y la rompés! 💥</div>
+      <div class="daycard">
+        <span class="chip">Glúteo · Día 1</span>
+        <div class="day">Glúteo pesado + empuje</div>
+        <button class="btn btn-lime">EMPEZAR ENTRENAMIENTO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRENAMIENTO -->
+  <div class="card">
+    <div class="name">Entrenamiento (con color por grupo)</div>
+    <div class="phone">
+      <div class="hd"><span class="bk">‹</span><span class="ti">Día 1 · Glúteo pesado</span></div>
+      <div class="prog"><span></span></div>
+      <div class="progtxt">3 de 8 ejercicios</div>
+
+      <div class="ex c-abs"><div class="barcol"></div><div class="body"><div class="dot">🔥</div><div><div class="nm">Crunch bicicleta</div><div class="cat">Abdomen</div></div></div></div>
+      <div class="ex c-abs"><div class="barcol"></div><div class="body"><div class="dot">🔥</div><div><div class="nm">Toques de talón</div><div class="cat">Abdomen</div></div></div></div>
+      <div class="ex c-glu"><div class="barcol"></div><div class="body"><div class="dot">🍑</div><div><div class="nm">Hip thrust con barra</div><div class="cat">Glúteo</div></div></div></div>
+      <div class="ex c-pie"><div class="barcol"></div><div class="body"><div class="dot">🦵</div><div><div class="nm">Búlgara con mancuernas</div><div class="cat">Pierna · ↔ por lado</div></div></div></div>
+      <div class="ex c-sup"><div class="barcol"></div><div class="body"><div class="dot">💪</div><div><div class="nm">Press plano con mancuernas</div><div class="cat">Tren superior</div></div></div></div>
+      <div class="ex c-glu"><div class="barcol"></div><div class="body"><div class="dot">🍑</div><div><div class="nm">Abducción de cadera</div><div class="cat">Glúteo</div></div></div></div>
+
+      <button class="btn btn-fucsia" style="margin-top:6px;">TERMINAR ENTRENO</button>
+    </div>
+  </div>
+</body>
+</html>

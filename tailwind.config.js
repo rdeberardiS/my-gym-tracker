@@ -6,49 +6,58 @@ export default {
     extend: {
       colors: {
         // ============================================================
-        // Tema "Café con Leche" (claro, cálido, chic)
+        // Tema "Power" — claro, atlético (blanco · negro · lima · fucsia)
         // ============================================================
         bg: {
-          DEFAULT: '#f3ebe4', // crema (fondo)
-          elevated: '#fffaf6', // tarjetas (casi blanco cálido)
-          subtle: '#e7dace', // bordes / separadores suaves
+          DEFAULT: '#eeedea', // gris muy claro (fondo)
+          elevated: '#ffffff', // tarjetas (blanco)
+          subtle: '#e4e2de', // bordes / separadores suaves
         },
         fg: {
-          DEFAULT: '#3b2f2a', // cocoa (texto principal)
-          muted: '#8a7a70', // texto secundario
-          subtle: '#b0a298', // texto terciario / placeholders
+          DEFAULT: '#161616', // negro (texto principal)
+          muted: '#8c8c8c', // texto secundario
+          subtle: '#b4b1ac', // texto terciario / placeholders
         },
+        // Acento principal: LIMA (manda). Se usa de fondo; el texto encima va oscuro.
         accent: {
-          DEFAULT: '#c97b84', // rosa palo (acción principal)
-          muted: '#f6e3e4', // rosa muy suave (fondos/chips)
-          ink: '#ffffff', // texto sobre el acento
+          DEFAULT: '#c2f000', // lima eléctrica (acción principal, anillo)
+          muted: '#eef7c0', // lima muy suave (fondos/chips)
+          ink: '#161616', // texto sobre la lima (oscuro, legible)
         },
-        // Estados (adaptados a la paleta cálida)
+        // Acento secundario: FUCSIA (toques). Legible como texto sobre claro.
+        fucsia: {
+          DEFAULT: '#ff2d8b',
+          muted: '#ffe0ee',
+          ink: '#ffffff',
+        },
+        // Estados
         warn: {
-          DEFAULT: '#d8a24a', // ámbar cálido
-          muted: '#f4e6cc',
-          ink: '#5a4215',
+          DEFAULT: '#e6a100', // ámbar
+          muted: '#fdf0cc',
+          ink: '#4a3600',
         },
         danger: {
-          DEFAULT: '#cf6b63', // rojo cálido
-          muted: '#f6ddd9',
-          ink: '#5c2520',
+          DEFAULT: '#e23b6d', // rojo-rosado (alerta)
+          muted: '#ffe1ea',
+          ink: '#5c0f24',
         },
+        // Calendario: cumplí la semana = lima · entrené pero no llegué = fucsia
         sage: {
-          DEFAULT: '#8fa36b', // verde salvia (cumplí la semana)
-          muted: '#e4ead4',
-          ink: '#2c3814',
+          DEFAULT: '#c2f000',
+          muted: '#eef7c0',
+          ink: '#161616',
         },
         caramel: {
-          DEFAULT: '#d9b08c', // caramelo (no llegué / dorado)
-          muted: '#f1e4d4',
-          ink: '#4a3411',
+          DEFAULT: '#ff2d8b',
+          muted: '#ffe0ee',
+          ink: '#ffffff',
         },
-        brown: '#b08968', // marrón suave (detalles)
-        line: '#e2d4c6', // línea/borde cálido
+        brown: '#8c8c8c',
+        line: '#e4e2de',
       },
       fontFamily: {
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['Archivo', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['Archivo', 'system-ui', 'sans-serif'],
       },
     },
   },

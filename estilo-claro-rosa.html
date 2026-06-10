@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gym Tracker — Estilo final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eeedea;--card:#ffffff;--ink:#161616;--muted:#8c8c8c;--line:#ededed;
+    --lime:#c2f000;--fucsia:#ff2d8b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#dededa;font-family:"Archivo",-apple-system,sans-serif;color:var(--ink);
+    padding:26px 16px 60px;display:flex;flex-direction:column;align-items:center;gap:30px;}
+  .intro{max-width:400px;text-align:center;}
+  .intro h2{font-weight:900;font-size:22px;margin-bottom:6px;letter-spacing:-.02em;}
+  .intro p{font-size:14px;color:#555;line-height:1.45;}
+  .card{width:100%;max-width:360px;}
+  .name{font-weight:800;font-size:14px;margin:0 4px 10px;color:#444;text-transform:uppercase;letter-spacing:.05em;}
+
+  .phone{background:var(--bg);border-radius:32px;padding:20px 16px 24px;overflow:hidden;position:relative;
+    box-shadow:0 16px 44px rgba(0,0,0,.28);}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding:0 4px;}
+  .hello{font-weight:900;font-size:20px;letter-spacing:-.02em;}
+  .menu{width:38px;height:38px;border-radius:50%;background:var(--fucsia);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;}
+
+  .panel{background:var(--card);border-radius:24px;padding:22px 20px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,0,0,.05);}
+
+  .ringwrap{position:relative;width:168px;height:168px;margin:2px auto 10px;}
+  .ringwrap svg{transform:rotate(-90deg);}
+  .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .rc .big{font-weight:900;font-size:46px;line-height:1;letter-spacing:-.03em;}
+  .rc .sm{font-size:10.5px;color:var(--muted);margin-top:3px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;}
+  .msg{text-align:center;font-weight:800;font-size:16px;color:var(--fucsia);letter-spacing:-.01em;}
+
+  .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    padding:5px 11px;border-radius:8px;margin-bottom:10px;}
+  .tag.lime{background:var(--lime);color:var(--ink);}
+  .bigtitle{font-weight:900;font-size:28px;line-height:1.02;letter-spacing:-.03em;margin-bottom:8px;}
+  .accent{width:46px;height:5px;border-radius:4px;background:var(--fucsia);margin-bottom:16px;}
+  .icons{display:flex;gap:9px;margin-bottom:16px;}
+  .ic{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;}
+  .ic.lime{background:var(--lime);} .ic.fucsia{background:var(--fucsia);}
+  .btn{display:block;width:100%;border:none;font-family:"Archivo";font-weight:900;font-size:15px;padding:16px;border-radius:14px;letter-spacing:.03em;text-transform:uppercase;}
+  .btn-lime{background:var(--lime);color:var(--ink);}
+  .btn-fucsia{background:var(--fucsia);color:#fff;}
+
+  .hd{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:0 4px;}
+  .hd .bk{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .hd .ti{font-weight:900;font-size:18px;letter-spacing:-.02em;}
+  .prhead{display:flex;justify-content:space-between;align-items:baseline;margin:2px 4px 8px;}
+  .prhead .c{font-weight:900;font-size:15px;}
+  .prhead .c b{color:var(--fucsia);} .prhead .c span{color:var(--muted);}
+  .prog{height:8px;border-radius:6px;background:#fff;margin:0 4px 16px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.04);}
+  .prog>span{display:block;height:100%;width:37%;background:linear-gradient(90deg,#c2f000,#ff2d8b);border-radius:6px;}
+
+  .ex{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:9px;box-shadow:0 4px 14px rgba(0,0,0,.04);}
+  .ex .nm{font-weight:800;font-size:15px;letter-spacing:-.01em;}
+  .ex .cat{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px;}
+  .ex .chk{margin-left:auto;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .ex .chk.done{background:var(--lime);color:var(--ink);font-weight:900;}
+  .ex .chk.todo{border:2px solid #ddd;}
+  .rec{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--fucsia);color:#fff;padding:2px 7px;border-radius:6px;margin-left:7px;vertical-align:middle;}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h2>Blanco &middot; Negro &middot; Lima &middot; Fucsia</h2>
+    <p>Igual que antes, con un poco mas de rosa repartido. La lima sigue al mando.</p>
+  </div>
+
+  <!-- HOME -->
+  <div class="card">
+    <div class="name">Inicio</div>
+    <div class="phone">
+      <div class="top"><div class="hello">HOLA, ROCIO</div><div class="menu">&#9881;</div></div>
+
+      <div class="panel" style="text-align:center;">
+        <div class="ringwrap">
+          <svg width="168" height="168" viewBox="0 0 168 168">
+            <defs><linearGradient id="lf" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#c2f000"/><stop offset="1" stop-color="#ff2d8b"/></linearGradient></defs>
+            <circle cx="84" cy="84" r="68" fill="none" stroke="#ededed" stroke-width="15"/>
+            <circle cx="84" cy="84" r="68" fill="none" stroke="url(#lf)" stroke-width="15" stroke-linecap="round"
+                    stroke-dasharray="427" stroke-dashoffset="142"/>
+          </svg>
+          <div class="rc"><div class="big">2/3</div><div class="sm">esta semana</div></div>
+        </div>
+        <div class="msg">&iexcl;UNA MAS Y LA ROMPES!</div>
+      </div>
+
+      <div class="panel">
+        <span class="tag lime">Dia 1 &middot; Gluteo</span>
+        <div class="bigtitle">Gluteo Pesado + Empuje</div>
+        <div class="accent"></div>
+        <div class="icons"><div class="ic lime">&#127825;</div><div class="ic fucsia">&#128170;</div></div>
+        <button class="btn btn-lime">Empezar entrenamiento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRENAMIENTO -->
+  <div class="card">
+    <div class="name">Entrenamiento</div>
+    <div class="phone">
+      <div class="hd"><div class="bk">&lsaquo;</div><div class="ti">DIA 1 &middot; GLUTEO PESADO</div></div>
+      <div class="prhead"><div class="c"><b>3</b> <span>/ 8 ejercicios</span></div></div>
+      <div class="prog"><span></span></div>
+
+      <div class="ex"><div><div class="nm">Crunch bicicleta</div><div class="cat">Abdomen &middot; 3&times;20</div></div><div class="chk done">&#10003;</div></div>
+      <div class="ex"><div><div class="nm">Toques de talon</div><div class="cat">Abdomen &middot; 3&times;20</div></div><div class="chk done">&#10003;</div></div>
+      <div class="ex"><div><div class="nm">Hip thrust con barra <span class="rec">Record</span></div><div class="cat">Gluteo &middot; 3&times;10 &middot; i4</div></div><div class="chk todo"></div></div>
+      <div class="ex"><div><div class="nm">Bulgara con mancuernas</div><div class="cat">Pierna &middot; 3&times;10 &middot; &harr; por lado</div></div><div class="chk todo"></div></div>
+      <div class="ex"><div><div class="nm">Press plano con mancuernas</div><div class="cat">Pecho &middot; 3&times;10 &middot; i3</div></div><div class="chk todo"></div></div>
+
+      <button class="btn btn-fucsia" style="margin-top:6px;">Terminar entreno</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gym Tracker — ¿Sumamos cyan?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lime:#c6ff2e;
+    --fucsia:#ff2d8b;
+    --cyan:#2ee6e6;
+    --txt:#f4f7ee;
+    --muted:#9aa08c;
+    --surf:rgba(255,255,255,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:#07080a;font-family:"Outfit",-apple-system,sans-serif;color:var(--txt);
+    padding:26px 16px 60px;display:flex;flex-direction:column;align-items:center;gap:34px;
+  }
+  .intro{max-width:400px;text-align:center;}
+  .intro h2{font-family:"Baloo 2";font-size:22px;margin-bottom:6px;}
+  .intro p{font-size:14px;color:#a7ab9c;line-height:1.45;}
+
+  .card{width:100%;max-width:360px;}
+  .name{font-family:"Baloo 2";font-weight:800;font-size:17px;margin:0 4px 10px;display:flex;align-items:center;gap:8px;}
+  .name .sw{display:inline-flex;gap:4px;}
+  .name .sw i{width:13px;height:13px;border-radius:50%;display:inline-block;}
+
+  .phone{
+    background:radial-gradient(125% 95% at 50% 0%,#15180e 0%,#0a0b07 70%);
+    border-radius:32px;padding:22px 20px 26px;overflow:hidden;position:relative;
+    box-shadow:0 16px 44px rgba(0,0,0,.55);border:1px solid rgba(198,255,46,.08);
+  }
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .hello{font-family:"Baloo 2";font-weight:700;font-size:18px;}
+  .menu{opacity:.65;font-size:20px;}
+  .weekrow{display:flex;gap:6px;margin:0 2px 16px;}
+  .weekrow i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.1);}
+  .weekrow i.on{background:var(--lime);}
+  .weekrow i.now{background:var(--fucsia);}
+  .weekrow i.now-cyan{background:var(--cyan);}
+
+  .ringwrap{position:relative;width:160px;height:160px;margin:4px auto 14px;}
+  .ringwrap svg{transform:rotate(-90deg);}
+  .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .rc .big{font-family:"Baloo 2";font-weight:800;font-size:42px;line-height:1;color:#fff;}
+  .rc .sm{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.08em;text-transform:uppercase;}
+  .msg{text-align:center;font-family:"Baloo 2";font-weight:700;font-size:16px;margin-bottom:16px;color:var(--fucsia);}
+
+  .blk{background:var(--surf);border-radius:20px;padding:16px 18px;margin-bottom:14px;}
+  .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-bottom:3px;color:var(--lime);}
+  .day{font-family:"Baloo 2";font-weight:700;font-size:18px;margin-bottom:14px;}
+  .btn{display:block;width:100%;border:none;font-family:"Baloo 2";font-weight:800;font-size:16px;padding:15px;border-radius:15px;letter-spacing:.02em;background:var(--lime);color:#16190d;box-shadow:0 8px 22px rgba(198,255,46,.32);}
+
+  /* timer chip */
+  .timer{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    border-radius:15px;padding:13px;margin-bottom:14px;font-family:"Baloo 2";font-weight:700;font-size:15px;
+  }
+  .timer.plain{background:var(--surf);color:var(--muted);}
+  .timer.cyan{
+    background:rgba(46,230,230,.1);border:1px solid rgba(46,230,230,.45);color:var(--cyan);
+    box-shadow:0 0 22px rgba(46,230,230,.18);
+  }
+  .timer .bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .timer .bar > span{display:block;height:100%;width:55%;border-radius:4px;}
+  .timer.plain .bar > span{background:var(--muted);}
+  .timer.cyan .bar > span{background:var(--cyan);}
+
+  .sect{font-family:"Baloo 2";font-weight:700;font-size:14px;margin:2px 2px 8px;color:var(--muted);}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--surf);border-radius:16px;margin-bottom:8px;}
+  .row .pill{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:rgba(198,255,46,.16);}
+  .row .pill.f{background:rgba(255,45,139,.18);}
+  .row .t{font-weight:600;font-size:13.5px;}
+  .row .d{font-size:11.5px;color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h2>¿Sumamos un toque de cyan? 💧</h2>
+    <p>Izquierda: los 3 de siempre. Derecha: igual, pero con cyan eléctrico SOLO en el timer de descanso y el "hoy". Compará.</p>
+  </div>
+
+  <!-- SIN CYAN -->
+  <div class="card">
+    <div class="name"><span class="sw"><i style="background:#c6ff2e"></i><i style="background:#ff2d8b"></i></span>Los 3 colores</div>
+    <div class="phone">
+      <div class="top"><div class="hello">Hola, Rocío ⚡</div><div class="menu">⋯</div></div>
+      <div class="weekrow"><i class="on"></i><i class="on"></i><i class="now"></i></div>
+      <div class="ringwrap">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="15"/>
+          <circle cx="80" cy="80" r="65" fill="none" stroke="#c6ff2e" stroke-width="15" stroke-linecap="round"
+                  stroke-dasharray="408" stroke-dashoffset="136"/>
+        </svg>
+        <div class="rc"><div class="big">2/3</div><div class="sm">esta semana</div></div>
+      </div>
+      <div class="msg">¡Una más y la rompés! 💥</div>
+      <div class="timer plain">⏱ Descanso · 0:45 <span class="bar"><span></span></span></div>
+      <div class="blk">
+        <div class="eyebrow">Día sugerido</div>
+        <div class="day">Día 1 · Glúteo pesado</div>
+        <button class="btn">EMPEZAR ENTRENAMIENTO</button>
+      </div>
+      <div class="sect">Últimos entrenos</div>
+      <div class="row"><div class="pill">✓</div><div><div class="t">Día 3 · Glúteo accesorio</div><div class="d">Ayer · 9 ejercicios</div></div></div>
+      <div class="row"><div class="pill f">🔥</div><div><div class="t">Día 1 · Glúteo pesado</div><div class="d">Sábado · <span style="color:#ff2d8b;font-weight:700;">¡récord!</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- CON CYAN -->
+  <div class="card">
+    <div class="name"><span class="sw"><i style="background:#c6ff2e"></i><i style="background:#ff2d8b"></i><i style="background:#2ee6e6"></i></span>Con gotas de cyan</div>
+    <div class="phone">
+      <div class="top"><div class="hello">Hola, Rocío ⚡</div><div class="menu">⋯</div></div>
+      <div class="weekrow"><i class="on"></i><i class="on"></i><i class="now-cyan"></i></div>
+      <div class="ringwrap">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="15"/>
+          <circle cx="80" cy="80" r="65" fill="none" stroke="#c6ff2e" stroke-width="15" stroke-linecap="round"
+                  stroke-dasharray="408" stroke-dashoffset="136"/>
+        </svg>
+        <div class="rc"><div class="big">2/3</div><div class="sm">esta semana</div></div>
+      </div>
+      <div class="msg">¡Una más y la rompés! 💥</div>
+      <div class="timer cyan">⏱ Descanso · 0:45 <span class="bar"><span></span></span></div>
+      <div class="blk">
+        <div class="eyebrow">Día sugerido</div>
+        <div class="day">Día 1 · Glúteo pesado</div>
+        <button class="btn">EMPEZAR ENTRENAMIENTO</button>
+      </div>
+      <div class="sect">Últimos entrenos</div>
+      <div class="row"><div class="pill">✓</div><div><div class="t">Día 3 · Glúteo accesorio</div><div class="d">Ayer · 9 ejercicios</div></div></div>
+      <div class="row"><div class="pill f">🔥</div><div><div class="t">Día 1 · Glúteo pesado</div><div class="d">Sábado · <span style="color:#ff2d8b;font-weight:700;">¡récord!</span></div></div></div>
+    </div>
+  </div>
+</body>
+</html>

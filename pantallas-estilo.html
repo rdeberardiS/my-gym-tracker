@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gym Tracker — Pantallas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lime:#c6ff2e;--fucsia:#ff2d8b;--cyan:#2ee6e6;
+    --txt:#f4f7ee;--muted:#9aa08c;--surf:rgba(255,255,255,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#07080a;font-family:"Outfit",-apple-system,sans-serif;color:var(--txt);
+    padding:26px 16px 60px;display:flex;flex-direction:column;align-items:center;gap:32px;}
+  .intro{max-width:400px;text-align:center;}
+  .intro h2{font-family:"Baloo 2";font-size:22px;margin-bottom:6px;}
+  .intro p{font-size:14px;color:#a7ab9c;line-height:1.45;}
+  .card{width:100%;max-width:360px;}
+  .name{font-family:"Baloo 2";font-weight:800;font-size:16px;margin:0 4px 10px;color:var(--lime);}
+  .phone{background:radial-gradient(125% 95% at 50% 0%,#15180e 0%,#0a0b07 70%);
+    border-radius:32px;padding:20px 18px 24px;overflow:hidden;position:relative;
+    box-shadow:0 16px 44px rgba(0,0,0,.55);border:1px solid rgba(198,255,46,.08);}
+  .hd{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .hd .bk{font-size:20px;opacity:.7;}
+  .hd .ti{font-family:"Baloo 2";font-weight:700;font-size:18px;}
+  .badge{margin-left:auto;background:rgba(255,45,139,.18);color:var(--fucsia);font-weight:700;font-size:12px;padding:4px 10px;border-radius:20px;}
+  .btn{display:block;width:100%;border:none;font-family:"Baloo 2";font-weight:800;font-size:16px;padding:15px;border-radius:15px;letter-spacing:.02em;}
+  .btn-lime{background:var(--lime);color:#16190d;box-shadow:0 8px 22px rgba(198,255,46,.32);}
+  .btn-fucsia{background:var(--fucsia);color:#fff;box-shadow:0 8px 22px rgba(255,45,139,.4);}
+
+  /* entrenamiento */
+  .prog{height:7px;border-radius:5px;background:rgba(255,255,255,.1);margin-bottom:6px;overflow:hidden;}
+  .prog>span{display:block;height:100%;width:37%;background:var(--lime);border-radius:5px;}
+  .progtxt{font-size:12px;color:var(--muted);margin-bottom:16px;}
+  .exrow{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surf);border-radius:15px;margin-bottom:9px;}
+  .exrow .chk{width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .chk.done{background:var(--lime);color:#16190d;}
+  .chk.todo{border:2px solid rgba(255,255,255,.18);}
+  .exrow .nm{font-weight:600;font-size:14px;}
+  .exrow .ss{font-size:11.5px;color:var(--muted);}
+  .exrow .ss.ok{color:var(--lime);}
+
+  /* ejercicio */
+  .video{aspect-ratio:16/10;border-radius:16px;background:linear-gradient(135deg,#1d2113,#0e0f0a);
+    display:flex;align-items:center;justify-content:center;margin-bottom:14px;border:1px solid rgba(198,255,46,.12);}
+  .play{width:54px;height:54px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;color:#16190d;font-size:22px;box-shadow:0 6px 18px rgba(198,255,46,.4);}
+  .wlabel{text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+  .weight{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:6px;}
+  .weight .v{font-family:"Baloo 2";font-weight:800;font-size:40px;}
+  .step{width:46px;height:46px;border-radius:14px;background:var(--surf);border:1px solid rgba(255,255,255,.12);color:var(--lime);font-size:24px;display:flex;align-items:center;justify-content:center;}
+  .fine{text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px;}
+  .series{display:flex;gap:10px;margin-bottom:14px;}
+  .serie{flex:1;aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;}
+  .serie.done{background:var(--lime);color:#16190d;font-weight:700;}
+  .serie.todo{background:var(--surf);border:1.5px dashed rgba(255,255,255,.2);color:var(--muted);}
+  .timer{display:flex;align-items:center;justify-content:center;gap:9px;border-radius:14px;padding:12px;margin-bottom:14px;
+    font-family:"Baloo 2";font-weight:700;font-size:14px;background:rgba(46,230,230,.1);border:1px solid rgba(46,230,230,.45);color:var(--cyan);box-shadow:0 0 20px rgba(46,230,230,.16);}
+  .timer .bar{width:90px;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .timer .bar>span{display:block;height:100%;width:55%;background:var(--cyan);}
+
+  /* resumen */
+  .rsum{text-align:center;}
+  .rcirc{width:96px;height:96px;border-radius:50%;margin:8px auto 14px;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:46px;color:#16190d;box-shadow:0 10px 30px rgba(198,255,46,.4);}
+  .rsum h1{font-family:"Baloo 2";font-weight:800;font-size:26px;margin-bottom:14px;}
+  .stats{display:flex;gap:10px;margin-bottom:16px;}
+  .stat{flex:1;background:var(--surf);border-radius:16px;padding:14px 8px;}
+  .stat .n{font-family:"Baloo 2";font-weight:800;font-size:22px;}
+  .stat .n.f{color:var(--fucsia);}
+  .stat .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .weekmsg{font-family:"Baloo 2";font-weight:700;font-size:15px;color:var(--fucsia);margin-bottom:16px;}
+
+  /* progreso */
+  .cal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .cal-h .m{font-family:"Baloo 2";font-weight:700;font-size:18px;}
+  .dow,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;}
+  .dow span{text-align:center;font-size:10px;color:var(--muted);margin-bottom:6px;}
+  .grid{margin-bottom:16px;}
+  .d{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;background:rgba(255,255,255,.04);color:var(--muted);}
+  .d.lime{background:var(--lime);color:#16190d;font-weight:700;}
+  .d.fucsia{background:rgba(255,45,139,.85);color:#fff;font-weight:700;}
+  .d.today{border:2px solid var(--cyan);color:var(--txt);}
+  .legend{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted);}
+  .legend div{display:flex;align-items:center;gap:8px;}
+  .legend i{width:14px;height:14px;border-radius:4px;display:inline-block;}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h2>Las otras 4 pantallas 📲</h2>
+    <p>Mismo estilo: negro, lima que manda, fucsia en los toques, cyan en el timer. Así se ve la app entera.</p>
+  </div>
+
+  <!-- 1 ENTRENAMIENTO -->
+  <div class="card">
+    <div class="name">1 · Entrenamiento del día</div>
+    <div class="phone">
+      <div class="hd"><span class="bk">‹</span><span class="ti">Día 1 · Glúteo pesado</span></div>
+      <div class="prog"><span></span></div>
+      <div class="progtxt">3 de 8 ejercicios</div>
+      <div class="exrow"><div class="chk done">✓</div><div><div class="nm">Crunch bicicleta</div><div class="ss ok">3/3 series</div></div></div>
+      <div class="exrow"><div class="chk done">✓</div><div><div class="nm">Toques de talón</div><div class="ss ok">3/3 series</div></div></div>
+      <div class="exrow"><div class="chk done">✓</div><div><div class="nm">Crunch invertido</div><div class="ss ok">3/3 series</div></div></div>
+      <div class="exrow"><div class="chk todo"></div><div><div class="nm">Hip thrust con barra</div><div class="ss">0/3 series</div></div></div>
+      <div class="exrow"><div class="chk todo"></div><div><div class="nm">Búlgara con mancuernas</div><div class="ss">0/3 · ↔ por lado</div></div></div>
+      <button class="btn btn-fucsia" style="margin-top:6px;">TERMINAR ENTRENO</button>
+    </div>
+  </div>
+
+  <!-- 2 EJERCICIO -->
+  <div class="card">
+    <div class="name">2 · Ejercicio</div>
+    <div class="phone">
+      <div class="hd"><span class="bk">‹</span><span class="ti">Hip thrust con barra</span><span class="badge">i4</span></div>
+      <div class="video"><div class="play">▶</div></div>
+      <div class="wlabel">Peso</div>
+      <div class="weight"><div class="step">−</div><div class="v">60<span style="font-size:18px;"> kg</span></div><div class="step">+</div></div>
+      <div class="fine">ajuste fino ± 2.5</div>
+      <div class="series">
+        <div class="serie done">✓<span>Serie 1</span></div>
+        <div class="serie done">✓<span>Serie 2</span></div>
+        <div class="serie todo">○<span>Serie 3</span></div>
+      </div>
+      <div class="timer">⏱ Descanso · 0:45 <span class="bar"><span></span></span></div>
+      <button class="btn btn-lime">REGISTRAR LAS 3 SERIES</button>
+    </div>
+  </div>
+
+  <!-- 3 RESUMEN -->
+  <div class="card">
+    <div class="name">3 · Resumen post-entreno</div>
+    <div class="phone rsum">
+      <div class="rcirc">✓</div>
+      <h1>¡Entreno terminado!</h1>
+      <div class="stats">
+        <div class="stat"><div class="n">8</div><div class="l">ejercicios</div></div>
+        <div class="stat"><div class="n">24</div><div class="l">series</div></div>
+        <div class="stat"><div class="n f">1</div><div class="l">récord 🔥</div></div>
+      </div>
+      <div class="weekmsg">¡Te falta 1 para completar la semana! 💥</div>
+      <button class="btn btn-lime">VOLVER AL INICIO</button>
+    </div>
+  </div>
+
+  <!-- 4 PROGRESO -->
+  <div class="card">
+    <div class="name">4 · Progreso (calendario)</div>
+    <div class="phone">
+      <div class="cal-h"><span class="bk">‹</span><span class="m">Junio 2026</span><span class="bk">›</span></div>
+      <div class="dow"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      <div class="grid">
+        <div class="d">1</div><div class="d">2</div><div class="d lime">3</div><div class="d">4</div><div class="d fucsia">5</div><div class="d">6</div><div class="d lime">7</div>
+        <div class="d">8</div><div class="d lime">9</div><div class="d">10</div><div class="d lime">11</div><div class="d">12</div><div class="d fucsia">13</div><div class="d lime">14</div>
+        <div class="d">15</div><div class="d">16</div><div class="d lime">17</div><div class="d">18</div><div class="d lime">19</div><div class="d">20</div><div class="d lime">21</div>
+        <div class="d">22</div><div class="d">23</div><div class="d today">24</div><div class="d">25</div><div class="d">26</div><div class="d">27</div><div class="d">28</div>
+      </div>
+      <div class="legend">
+        <div><i style="background:#c6ff2e"></i> Entrenaste y cumpliste la semana</div>
+        <div><i style="background:#ff2d8b"></i> Entrenaste (no llegaste al objetivo)</div>
+        <div><i style="background:transparent;border:2px solid #2ee6e6"></i> Hoy</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
