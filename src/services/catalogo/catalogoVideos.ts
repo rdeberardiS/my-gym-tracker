@@ -252,7 +252,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'step up alto con mancuernas',
       'subida al banco',
     ],
-    'https://www.youtube.com/watch?v=dQqApCGd5Ss',
+    'https://www.youtube.com/watch?v=CBCPBnMzsMI',
     'pierna'
   ),
   entry(
@@ -265,7 +265,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'cable kickback gluteo',
       'kickback gluteo',
     ],
-    'https://www.youtube.com/watch?v=SqO-fD1ZsZA',
+    'https://www.youtube.com/watch?v=5jJ3CxVTAas',
     'gluteo'
   ),
   entry(
@@ -312,7 +312,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'abduccion polea',
       'abduccion cadera polea',
     ],
-    'https://www.youtube.com/watch?v=4JmsoLQ2fpQ',
+    'https://www.youtube.com/watch?v=zRwrlyCx4Qc',
     'gluteo'
   ),
 
@@ -471,7 +471,7 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
       'triceps polea',
       'tricep pushdown',
     ],
-    'https://www.youtube.com/watch?v=2-LAMcpzODU',
+    'https://www.youtube.com/watch?v=aPe_w7K7tWg',
     'brazos'
   ),
 ];

@@ -219,7 +219,8 @@ export async function obtenerHistorialEjercicio(
  */
 export async function calcularUltimaVez(
   ejercicioId: string,
-  sinPeso: boolean = false
+  sinPeso: boolean = false,
+  repsObjetivo: number = 0
 ): Promise<ResumenUltimaVez> {
   const todasLasSeries = await obtenerSeriesDeEjercicio(ejercicioId);
 
@@ -239,11 +240,18 @@ export async function calcularUltimaVez(
     .filter((s) => s.sesionId === ultimaSesionId)
     .sort((a, b) => a.numeroSerie - b.numeroSerie);
 
-  // Para ejercicios sin peso (core), no hay peso pre-rellenado y la
-  // referencia muestra sólo las repeticiones.
+  // El peso sugerido depende del TIPO de ejercicio (según las reps que pide
+  // la rutina):
+  //   - "busca peso" (fuerza, pocas reps): sugiere el peso MÁS ALTO de la
+  //     última sesión, para que intentes igualarlo o superarlo.
+  //   - "busca reps" / intermedio: sugiere el peso de siempre (la moda).
+  //   - sin peso (core): no aplica.
+  const pesos = seriesUltimaSesion.map((s) => s.peso);
   const pesoPreRellenado = sinPeso
     ? null
-    : calcularPesoModa(seriesUltimaSesion.map((s) => s.peso));
+    : clasificarPorReps(repsObjetivo) === 'peso'
+      ? Math.max(...pesos)
+      : calcularPesoModa(pesos);
 
   const textoReferencia = sinPeso
     ? construirTextoReps(seriesUltimaSesion)
@@ -268,6 +276,19 @@ export async function calcularUltimaVez(
 function construirTextoReps(series: Serie[]): string {
   if (series.length === 0) return '';
   return `${series.map((s) => s.reps).join(', ')} reps`;
+}
+
+/**
+ * Clasifica un ejercicio según las reps que pide la rutina:
+ *   - 'peso'  → pocas reps (≤ 6): busca subir kilos (fuerza).
+ *   - 'reps'  → muchas reps (≥ 12): busca sumar repeticiones.
+ *   - 'neutro'→ en el medio (7-11) o sin dato: comportamiento de siempre.
+ */
+type ModoSugerencia = 'peso' | 'reps' | 'neutro';
+function clasificarPorReps(repsObjetivo: number): ModoSugerencia {
+  if (repsObjetivo >= 1 && repsObjetivo <= 6) return 'peso';
+  if (repsObjetivo >= 12) return 'reps';
+  return 'neutro';
 }
 
 /**

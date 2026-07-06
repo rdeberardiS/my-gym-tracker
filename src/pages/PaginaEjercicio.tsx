@@ -40,6 +40,7 @@ import {
 } from '@/db/repositorios/ejercicioRepo';
 import {
   obtenerComentario,
+  obtenerUltimoComentarioDeEjercicio,
   guardarComentario,
 } from '@/db/repositorios/comentarioRepo';
 import { RUTAS } from '@/rutas';
@@ -105,6 +106,10 @@ export function PaginaEjercicio() {
   const [modalVideoAbierto, setModalVideoAbierto] = useState(false);
   const [guardandoTodas, setGuardandoTodas] = useState(false);
   const [comentario, setComentario] = useState('');
+  // true cuando lo que se muestra es tu última nota traída de un entreno
+  // anterior y todavía no la editaste (no se guarda en el día de hoy hasta
+  // que la toques).
+  const [notaHeredada, setNotaHeredada] = useState(false);
   const timerComentario = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Etapa 2: récord y timer de descanso
@@ -162,8 +167,11 @@ export function PaginaEjercicio() {
         : await obtenerRecordEjercicio(ej.id, sesionId);
       setRecordPrevio(record);
 
-      // Calcular última vez
-      const ultima = await calcularUltimaVez(ej.id, sinPesoEj);
+      // Reps que pide la rutina (define si el ejercicio "busca peso" o "reps")
+      const repsObjetivo = parsearRepsObjetivo(presc.repsPrescriptas);
+
+      // Calcular última vez (el peso sugerido depende del tipo de ejercicio)
+      const ultima = await calcularUltimaVez(ej.id, sinPesoEj, repsObjetivo);
       setUltimaVez(ultima);
 
       // Cargar series ya registradas de esta sesión
@@ -179,8 +187,6 @@ export function PaginaEjercicio() {
         : seriesEsteEjercicio[0]?.peso ?? ultima.pesoPreRellenado ?? 10;
       setPesoGlobal(pesoInicial);
       setPesoTexto(fmtPeso(pesoInicial));
-
-      const repsObjetivo = parsearRepsObjetivo(presc.repsPrescriptas);
 
       // Armar las series en pantalla
       const en: SerieEnPantalla[] = [];
@@ -205,9 +211,18 @@ export function PaginaEjercicio() {
       }
       setSeriesEnPantalla(en);
 
-      // Cargar la nota de este ejercicio en esta sesión (si existe)
+      // Cargar la nota de este ejercicio en esta sesión (si existe). Si todavía
+      // no escribiste nada hoy, traemos tu última nota de este ejercicio como
+      // punto de partida (la podés editar o borrar).
       const notaExistente = await obtenerComentario(sesionId, ej.id);
-      setComentario(notaExistente);
+      if (notaExistente) {
+        setComentario(notaExistente);
+        setNotaHeredada(false);
+      } else {
+        const ultima = await obtenerUltimoComentarioDeEjercicio(ej.id, sesionId);
+        setComentario(ultima);
+        setNotaHeredada(Boolean(ultima));
+      }
     } finally {
       setCargando(false);
     }
@@ -360,6 +375,8 @@ export function PaginaEjercicio() {
   // (debounce) para no escribir en cada tecla. También guardamos al salir.
   const onCambiarComentario = (texto: string) => {
     setComentario(texto);
+    // En cuanto la tocás, deja de ser "heredada": ya es tu nota de hoy.
+    setNotaHeredada(false);
     if (!ejercicio || !sesionId) return;
     if (timerComentario.current) clearTimeout(timerComentario.current);
     const ejId = ejercicio.id;
@@ -371,6 +388,8 @@ export function PaginaEjercicio() {
 
   const guardarComentarioYa = () => {
     if (!ejercicio || !sesionId) return;
+    // Si es la nota heredada y no la tocaste, no la copiamos al día de hoy.
+    if (notaHeredada) return;
     if (timerComentario.current) clearTimeout(timerComentario.current);
     guardarComentario(sesionId, ejercicio.id, comentario);
   };
@@ -595,6 +614,11 @@ export function PaginaEjercicio() {
           <label className="block text-fg-muted text-xs mb-2">
             📝 Nota de hoy <span className="text-fg-subtle">· para vos o tu PT</span>
           </label>
+          {notaHeredada && comentario && (
+            <p className="text-fg-subtle text-[11px] mb-2 -mt-1">
+              ↩ Tu última nota de este ejercicio. Editala o dejala así.
+            </p>
+          )}
           <textarea
             value={comentario}
             onChange={(e) => onCambiarComentario(e.target.value)}

@@ -49,6 +49,25 @@ export async function guardarComentario(
 }
 
 /**
+ * Devuelve el texto del último comentario (no vacío) que se escribió para este
+ * ejercicio en CUALQUIER sesión anterior. Se usa para mostrarlo por default al
+ * volver a entrar al ejercicio, así te acordás de tu última anotación.
+ *
+ * Opcionalmente excluye una sesión (normalmente la actual).
+ */
+export async function obtenerUltimoComentarioDeEjercicio(
+  ejercicioId: string,
+  excluirSesionId?: string
+): Promise<string> {
+  const todos = await db.comentarios.toArray();
+  const delEjercicio = todos
+    .filter((c) => c.ejercicioId === ejercicioId && c.texto.trim())
+    .filter((c) => !excluirSesionId || c.sesionId !== excluirSesionId)
+    .sort((a, b) => b.fechaActualizacion - a.fechaActualizacion);
+  return delEjercicio[0]?.texto ?? '';
+}
+
+/**
  * Devuelve un mapa { ejercicioId -> texto } con todos los comentarios de una
  * sesión. Usado en el detalle del día (Progreso) para leerlos después.
  */

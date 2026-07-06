@@ -1,1 +1,13 @@
-Fix: el checklist 'Esta semana' ahora marca el dia que hiciste (cruce por numero de dia) + bloque abs + videos.
+VERSION NUEVA — 4 ajustes (historial intacto, datos locales):
+
+1) Intensidad ahora se VE (gris a negro, con los vacios como circulitos huecos),
+   tanto en la lista del dia como en la pantalla del ejercicio.
+2) Peso sugerido segun el tipo de ejercicio:
+   - reps bajas (<=6, fuerza)  -> te sugiere el peso MAS ALTO de la ultima vez
+   - reps altas / intermedias  -> te sugiere el de siempre (la moda)
+3) Al entrar a un ejercicio aparece por default tu ULTIMA nota de ese ejercicio
+   (editable; si no la tocas, no se duplica en el dia de hoy).
+4) Videos arreglados: Patada de cadera en polea, Patada de gluteo en maquina,
+   Curl femoral en maquina y Jalon al pecho (los 4 estaban rotos o equivocados).
+
+Si ves esto, extrajiste la version correcta. (jun 2026)
