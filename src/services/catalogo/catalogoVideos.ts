@@ -474,6 +474,16 @@ export const CATALOGO_EJERCICIOS: CatalogoEjercicio[] = [
     'https://www.youtube.com/watch?v=aPe_w7K7tWg',
     'brazos'
   ),
+  // ============================================================
+  // AGREGADOS (rutina nueva jun 2026): abdominales + básicos
+  // ============================================================
+  entry('Hollow rock', ['hollow rock', 'hollow', 'balanceo hollow'], 'https://www.youtube.com/watch?v=PMQWORLtxMk', 'core'),
+  entry('Tuck ups alternados', ['tuck ups alternados', 'tuck ups alternado', 'tuck ups', 'tuck up'], 'https://www.youtube.com/watch?v=sUVyBDvqv0M', 'core'),
+  entry('V-sit alternado', ['v sit alternado', 'v sit', 'v ups', 'v up', 'v up alternado', 'abdominal bisagra', 'abdominales bisagra'], 'https://www.youtube.com/watch?v=1S-nZXK7yZA', 'core'),
+  entry('Russian twist', ['russian twist', 'giro ruso', 'giros rusos', 'twist ruso'], 'https://www.youtube.com/watch?v=wuc66c3DOQo', 'core'),
+  entry('Prayer sit ups', ['prayer sit ups', 'prayer sit up', 'prayer', 'sit ups', 'sit up'], 'https://www.youtube.com/watch?v=6yiO3DxFscc', 'core'),
+  entry('Sentadilla con barra', ['sentadilla con barra', 'sentadilla barra', 'back squat', 'sentadilla trasera'], 'https://www.youtube.com/watch?v=dsCuiccYNGs', 'pierna'),
+  entry('Peso muerto convencional', ['peso muerto convencional', 'peso muerto', 'deadlift'], 'https://www.youtube.com/watch?v=fx_jQxPHSNY', 'pierna'),
 ];
 
 /**
@@ -504,6 +514,11 @@ const VARIANTES_SIN_PESO_EXTRA = [
   'elevaciones de piernas',
   'russian twist',
   'tijeras',
+  'hollow',
+  'tuck up',
+  'v sit',
+  'sit up',
+  'toca punta',
 ].map(normalizar);
 
 /**

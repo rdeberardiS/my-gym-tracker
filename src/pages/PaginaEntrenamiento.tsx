@@ -16,6 +16,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Pantalla } from '@/components/Pantalla';
 import { Header } from '@/components/Header';
 import { Intensidad } from '@/components/Intensidad';
+import { tituloDia } from '@/services/formato/tituloDia';
 import { db } from '@/db/schema';
 import { iniciarSesion, terminarSesion, obtenerSeriesDeSesion } from '@/db/repositorios/sesionRepo';
 import {
@@ -203,7 +204,7 @@ export function PaginaEntrenamiento() {
           Tocá un ejercicio para entrenarlo
         </p>
         <h1 className="text-2xl font-medium tracking-tight mb-1">
-          {dia.nombre}
+          {tituloDia(dia.orden, dia.nombre)}
         </h1>
         <p className="text-fg-subtle text-xs mb-6">
           {bloquesCompletados} de {totalBloques}{' '}

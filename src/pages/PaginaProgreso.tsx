@@ -15,6 +15,7 @@ import { BottomBar } from '@/components/BottomBar';
 import { db } from '@/db/schema';
 import { obtenerConfiguracion } from '@/db/repositorios/configuracionRepo';
 import { obtenerComentariosDeSesion } from '@/db/repositorios/comentarioRepo';
+import { musculoDia } from '@/services/formato/tituloDia';
 import type { Sesion, Serie, Ejercicio, DiaRutina } from '@/types/dominio';
 
 interface ResumenDia {
@@ -144,7 +145,7 @@ export function PaginaProgreso() {
     }
 
     setResumen({
-      diaRutinaNombre: dia?.nombre ?? '',
+      diaRutinaNombre: dia ? musculoDia(dia.nombre) : '',
       diaRutinaOrden: dia?.orden ?? 0,
       ejercicios: ejerciciosResumen,
     });

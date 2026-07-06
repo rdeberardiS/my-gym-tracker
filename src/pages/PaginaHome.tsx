@@ -15,6 +15,7 @@ import {
   obtenerDiasDeRutina,
 } from '@/db/repositorios/rutinaRepo';
 import { obtenerDiaSugerido } from '@/db/queries/diaSugerido';
+import { musculoDia } from '@/services/formato/tituloDia';
 import {
   calcularEstadoSemanal,
   inicioSemana,
@@ -265,7 +266,7 @@ export function PaginaHome() {
                 Día {diaSugerido.orden}
               </span>
               <h1 className="font-display text-2xl font-black tracking-tight leading-tight mb-2">
-                {diaSugerido.nombre}
+                {musculoDia(diaSugerido.nombre)}
               </h1>
               <div className="w-11 h-[5px] rounded bg-fucsia mb-4" />
             </>

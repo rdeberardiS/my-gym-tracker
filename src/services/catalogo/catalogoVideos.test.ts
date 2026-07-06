@@ -113,6 +113,15 @@ describe('esEjercicioSinPeso', () => {
     expect(esEjercicioSinPeso('Plancha frontal')).toBe(true);
   });
 
+  it('marca como SIN peso los abdominales de la rutina vigente', () => {
+    expect(esEjercicioSinPeso('Hollow rock')).toBe(true);
+    expect(esEjercicioSinPeso('Tuck ups alternados')).toBe(true);
+    expect(esEjercicioSinPeso('V-sit alternado')).toBe(true);
+    expect(esEjercicioSinPeso('Russian twist')).toBe(true);
+    expect(esEjercicioSinPeso('Prayer sit ups')).toBe(true);
+    expect(esEjercicioSinPeso('Toca-punta en plancha alta')).toBe(true);
+  });
+
   it('marca como CON peso los ejercicios de carga', () => {
     expect(esEjercicioSinPeso('Hip thrust con barra')).toBe(false);
     expect(esEjercicioSinPeso('Press plano con mancuernas')).toBe(false);
