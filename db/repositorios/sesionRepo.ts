@@ -1,0 +1,373 @@
+/**
+ * Repositorio de Sesión y Serie.
+ *
+ * Acá vive la lógica más caliente del producto: registrar series,
+ * computar último peso, calcular objetivo semanal.
+ */
+
+import { db } from '../schema';
+import { generarId } from '../id';
+import { marcarEjercicioComoUsado } from './ejercicioRepo';
+import type { Sesion, Serie, ResumenUltimaVez } from '@/types/dominio';
+
+// ============================================================
+// Sesión
+// ============================================================
+
+/**
+ * Inicia una nueva sesión de entrenamiento.
+ * El usuario está abriendo "Entrenar". La sesión queda incompleta hasta
+ * que toque "Terminar entreno".
+ */
+export async function iniciarSesion(diaRutinaId: string): Promise<Sesion> {
+  const sesion: Sesion = {
+    id: generarId(),
+    diaRutinaId,
+    fechaInicio: Date.now(),
+    completada: false,
+  };
+  await db.sesiones.put(sesion);
+  return sesion;
+}
+
+/**
+ * Marca una sesión como terminada ("Terminar entreno").
+ * Solo las sesiones terminadas cuentan para el objetivo semanal.
+ */
+export async function terminarSesion(sesionId: string): Promise<void> {
+  await db.sesiones.update(sesionId, {
+    fechaFin: Date.now(),
+    completada: true,
+  });
+}
+
+/**
+ * Obtiene la última sesión completada (de cualquier día).
+ * Sirve para calcular cuál es el "siguiente día sugerido".
+ */
+export async function obtenerUltimaSesionCompletada(): Promise<Sesion | null> {
+  const sesiones = await db.sesiones
+    .filter((s) => s.completada === true)
+    .toArray();
+  if (sesiones.length === 0) return null;
+  sesiones.sort((a, b) => (b.fechaFin ?? 0) - (a.fechaFin ?? 0));
+  return sesiones[0];
+}
+
+/**
+ * Lista las últimas N sesiones completadas, ordenadas por fechaFin desc.
+ * Usado en la sección "Últimos entrenos" del home.
+ */
+export async function listarUltimasSesiones(limite: number = 10): Promise<Sesion[]> {
+  const sesiones = await db.sesiones
+    .filter((s) => s.completada === true)
+    .toArray();
+  sesiones.sort((a, b) => (b.fechaFin ?? 0) - (a.fechaFin ?? 0));
+  return sesiones.slice(0, limite);
+}
+
+/**
+ * Lista las sesiones VÁLIDAS (completadas + con al menos 1 serie) cuyo
+ * fechaFin cae dentro de la ventana [inicio, fin]. Usado para el checklist
+ * semanal del home.
+ */
+export async function listarSesionesValidasEnVentana(
+  inicio: number,
+  fin: number
+): Promise<Sesion[]> {
+  const sesiones = await db.sesiones
+    .where('fechaFin')
+    .between(inicio, fin, true, true)
+    .toArray();
+
+  const completadas = sesiones.filter((s) => s.completada === true);
+
+  const validas: Sesion[] = [];
+  for (const s of completadas) {
+    const tieneSerie =
+      (await db.series.where('sesionId').equals(s.id).count()) > 0;
+    if (tieneSerie) validas.push(s);
+  }
+  return validas;
+}
+
+// ============================================================
+// Serie
+// ============================================================
+
+export interface NuevaSerie {
+  sesionId: string;
+  ejercicioId: string;
+  numeroSerie: number;
+  peso: number;
+  reps: number;
+}
+
+/**
+ * Registra una serie.
+ * Además de guardarla, actualiza el fechaUltimoUso del ejercicio.
+ */
+export async function registrarSerie(datos: NuevaSerie): Promise<Serie> {
+  const ahora = Date.now();
+  const serie: Serie = {
+    id: generarId(),
+    sesionId: datos.sesionId,
+    ejercicioId: datos.ejercicioId,
+    numeroSerie: datos.numeroSerie,
+    peso: datos.peso,
+    reps: datos.reps,
+    fechaRegistro: ahora,
+  };
+
+  await db.transaction('rw', [db.series, db.ejercicios], async () => {
+    await db.series.put(serie);
+    await marcarEjercicioComoUsado(datos.ejercicioId, ahora);
+  });
+
+  return serie;
+}
+
+/**
+ * Obtiene todas las series de una sesión.
+ */
+export async function obtenerSeriesDeSesion(sesionId: string): Promise<Serie[]> {
+  return db.series.where('sesionId').equals(sesionId).toArray();
+}
+
+/**
+ * Obtiene todas las series de un ejercicio, ordenadas por fecha desc.
+ * Usado en la pantalla de Progreso del ejercicio.
+ */
+export async function obtenerSeriesDeEjercicio(
+  ejercicioId: string
+): Promise<Serie[]> {
+  const series = await db.series
+    .where('[ejercicioId+fechaRegistro]')
+    .between([ejercicioId, 0], [ejercicioId, Number.MAX_SAFE_INTEGER])
+    .toArray();
+  series.sort((a, b) => b.fechaRegistro - a.fechaRegistro);
+  return series;
+}
+
+/**
+ * Récord de peso de un ejercicio: el peso máximo registrado en su historial.
+ * Permite excluir una sesión (típicamente la actual) para comparar contra el
+ * "mejor anterior" y detectar si en esta sesión se superó.
+ * Devuelve 0 si no hay historial.
+ */
+export async function obtenerRecordEjercicio(
+  ejercicioId: string,
+  excluirSesionId?: string
+): Promise<number> {
+  const series = await obtenerSeriesDeEjercicio(ejercicioId);
+  let max = 0;
+  for (const s of series) {
+    if (excluirSesionId && s.sesionId === excluirSesionId) continue;
+    if (s.peso > max) max = s.peso;
+  }
+  return max;
+}
+
+/** Un punto del historial: una sesión en la que se entrenó el ejercicio. */
+export interface PuntoHistorial {
+  sesionId: string;
+  fecha: number; // timestamp ms (más reciente de esa sesión)
+  pesoMax: number; // peso más alto de esa sesión
+  series: number; // cantidad de series registradas
+}
+
+/**
+ * Historial de pesos de un ejercicio, una entrada por sesión, de la más
+ * reciente a la más vieja. Base de la pantalla "Mis ejercicios".
+ */
+export async function obtenerHistorialEjercicio(
+  ejercicioId: string,
+  limite: number = 12
+): Promise<PuntoHistorial[]> {
+  const todas = await obtenerSeriesDeEjercicio(ejercicioId);
+  const porSesion = new Map<string, Serie[]>();
+  for (const s of todas) {
+    const arr = porSesion.get(s.sesionId) ?? [];
+    arr.push(s);
+    porSesion.set(s.sesionId, arr);
+  }
+  const puntos: PuntoHistorial[] = [];
+  porSesion.forEach((series, sesionId) => {
+    const pesoMax = series.reduce((m, s) => Math.max(m, s.peso), 0);
+    const fecha = series.reduce((m, s) => Math.max(m, s.fechaRegistro), 0);
+    puntos.push({ sesionId, fecha, pesoMax, series: series.length });
+  });
+  puntos.sort((a, b) => b.fecha - a.fecha);
+  return puntos.slice(0, limite);
+}
+
+// ============================================================
+// Queries derivadas: el "último peso" y "última vez"
+// ============================================================
+
+/**
+ * Calcula el resumen de la última vez que se entrenó este ejercicio.
+ * Es la query más importante de la pantalla de entrenamiento.
+ *
+ * Devuelve:
+ *   - pesoPreRellenado: el peso más frecuente de la última sesión
+ *     (la "moda"). Si todos fueron distintos, el de la primera serie.
+ *   - textoReferencia: "40kg × 8, 8, 8" o "Primera vez con este ejercicio"
+ *   - hace: "Hace X días" o null
+ *
+ * Cruza todas las rutinas: el último peso es global al ejercicio.
+ */
+export async function calcularUltimaVez(
+  ejercicioId: string,
+  sinPeso: boolean = false,
+  repsObjetivo: number = 0
+): Promise<ResumenUltimaVez> {
+  const todasLasSeries = await obtenerSeriesDeEjercicio(ejercicioId);
+
+  if (todasLasSeries.length === 0) {
+    return {
+      pesoPreRellenado: null,
+      textoReferencia: 'Primera vez con este ejercicio',
+      hace: null,
+      fechaUltimaVez: null,
+    };
+  }
+
+  // Identificar la última sesión (sesionId de la primera serie del array,
+  // que es la más reciente por orden desc)
+  const ultimaSesionId = todasLasSeries[0].sesionId;
+  const seriesUltimaSesion = todasLasSeries
+    .filter((s) => s.sesionId === ultimaSesionId)
+    .sort((a, b) => a.numeroSerie - b.numeroSerie);
+
+  // El peso sugerido depende del TIPO de ejercicio (según las reps que pide
+  // la rutina):
+  //   - "busca peso" (fuerza, pocas reps): sugiere el peso MÁS ALTO de la
+  //     última sesión, para que intentes igualarlo o superarlo.
+  //   - "busca reps" / intermedio: sugiere el peso de siempre (la moda).
+  //   - sin peso (core): no aplica.
+  const pesos = seriesUltimaSesion.map((s) => s.peso);
+  const pesoPreRellenado = sinPeso
+    ? null
+    : clasificarPorReps(repsObjetivo) === 'peso'
+      ? Math.max(...pesos)
+      : calcularPesoModa(pesos);
+
+  const textoReferencia = sinPeso
+    ? construirTextoReps(seriesUltimaSesion)
+    : construirTextoReferencia(seriesUltimaSesion);
+
+  // Calcular "hace X días"
+  const fechaUltimaVez = todasLasSeries[0].fechaRegistro;
+  const hace = formatearHace(fechaUltimaVez);
+
+  return {
+    pesoPreRellenado,
+    textoReferencia,
+    hace,
+    fechaUltimaVez,
+  };
+}
+
+/**
+ * Texto de referencia para ejercicios sin peso (core): sólo las reps.
+ * Ej: "20, 20, 20 reps"
+ */
+function construirTextoReps(series: Serie[]): string {
+  if (series.length === 0) return '';
+  return `${series.map((s) => s.reps).join(', ')} reps`;
+}
+
+/**
+ * Clasifica un ejercicio según las reps que pide la rutina:
+ *   - 'peso'  → pocas reps (≤ 6): busca subir kilos (fuerza).
+ *   - 'reps'  → muchas reps (≥ 12): busca sumar repeticiones.
+ *   - 'neutro'→ en el medio (7-11) o sin dato: comportamiento de siempre.
+ */
+type ModoSugerencia = 'peso' | 'reps' | 'neutro';
+function clasificarPorReps(repsObjetivo: number): ModoSugerencia {
+  if (repsObjetivo >= 1 && repsObjetivo <= 6) return 'peso';
+  if (repsObjetivo >= 12) return 'reps';
+  return 'neutro';
+}
+
+/**
+ * Calcula la moda (valor más frecuente) de un array de pesos.
+ * Si todos son distintos, devuelve el primero.
+ * Si hay empate, devuelve el más alto entre los empatados.
+ */
+function calcularPesoModa(pesos: number[]): number {
+  if (pesos.length === 0) return 0;
+
+  const conteo = new Map<number, number>();
+  for (const p of pesos) {
+    conteo.set(p, (conteo.get(p) ?? 0) + 1);
+  }
+
+  let maxConteo = 0;
+  let pesoModa = pesos[0];
+
+  for (const [peso, count] of conteo.entries()) {
+    if (count > maxConteo || (count === maxConteo && peso > pesoModa)) {
+      maxConteo = count;
+      pesoModa = peso;
+    }
+  }
+
+  // Si todos los pesos aparecen una sola vez (sin moda real),
+  // devolvemos el de la primera serie.
+  if (maxConteo === 1) {
+    return pesos[0];
+  }
+
+  return pesoModa;
+}
+
+/**
+ * Construye texto tipo "40kg × 8, 8, 8" o "40kg × 8, 8 · 42.5kg × 6"
+ * cuando los pesos varían entre series.
+ */
+function construirTextoReferencia(series: Serie[]): string {
+  if (series.length === 0) return '';
+
+  // Agrupar series consecutivas con el mismo peso
+  const grupos: { peso: number; reps: number[] }[] = [];
+  for (const s of series) {
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo.peso === s.peso) {
+      ultimo.reps.push(s.reps);
+    } else {
+      grupos.push({ peso: s.peso, reps: [s.reps] });
+    }
+  }
+
+  return grupos
+    .map((g) => `${formatearPeso(g.peso)} × ${g.reps.join(', ')}`)
+    .join(' · ');
+}
+
+function formatearPeso(peso: number): string {
+  // Si es entero, sin decimales. Si tiene .5, mostrarlo.
+  return Number.isInteger(peso) ? `${peso}kg` : `${peso}kg`;
+}
+
+/**
+ * Formatea timestamp -> "Hoy", "Ayer", "Hace 3 días", "Hace 2 meses".
+ */
+export function formatearHace(timestamp: number): string {
+  const ahora = Date.now();
+  const diffMs = ahora - timestamp;
+  const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDias === 0) return 'Hoy';
+  if (diffDias === 1) return 'Ayer';
+  if (diffDias < 30) return `Hace ${diffDias} días`;
+
+  const diffMeses = Math.floor(diffDias / 30);
+  if (diffMeses === 1) return 'Hace 1 mes';
+  if (diffMeses < 12) return `Hace ${diffMeses} meses`;
+
+  const diffAnios = Math.floor(diffMeses / 12);
+  if (diffAnios === 1) return 'Hace 1 año';
+  return `Hace ${diffAnios} años`;
+}
